@@ -1,0 +1,7 @@
+{
+    "msg": "success",
+    "code": 10000,
+    "data": {
+        "revisitRatio": "0.61"
+    }
+}

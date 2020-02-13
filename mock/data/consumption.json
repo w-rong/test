@@ -1,0 +1,11 @@
+{
+    "msg": "success",
+    "code": 10000,
+    "data": {
+        "total": "25.14",
+        "avg": "25.52",
+        "catering": "25.14",
+        "hotel": "25.14",
+        "scenic": "25.14"
+    }
+}

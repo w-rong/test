@@ -1,0 +1,9 @@
+{
+    "msg": "success",
+    "code": 10000,
+        "data": {
+        "withChild": "0.61",
+        "tourismDr": "0.61",
+        "married": "0.61"
+    }
+}

@@ -1,0 +1,22 @@
+{
+    "msg": "success",
+    "code": 10000,
+    "data": [
+        {
+            "realAmount": 1178,
+            "saturation": "空闲",
+            "scenicName": "普陀白沙岛景区",
+            "lng": "122.417396",
+            "maxAmount": 50000,
+            "lat": "29.926368"
+        },
+        {
+            "realAmount": 1178,
+            "saturation": "空闲",
+            "scenicName": "朱家尖白山景区",
+            "lng": "122.401403",
+            "maxAmount": 50000,
+            "lat": "29.941781"
+        }
+    ]
+}

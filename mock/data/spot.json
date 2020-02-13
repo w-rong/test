@@ -1,0 +1,23 @@
+{
+    "msg": "success",
+    "code": 10000,
+    "data": [
+        {
+            "scenicName": "普陀白沙岛景区",
+            "touristVolume": 10617
+        },
+        {
+            "scenicName": "朱家尖白山景区",
+            "touristVolume": 10010
+        }
+        ,
+        {
+            "scenicName": "朱家尖白山景区",
+            "touristVolume": 9000
+        },
+        {
+            "scenicName": "朱家尖白山景区",
+            "touristVolume": 9000
+        }
+    ]
+}

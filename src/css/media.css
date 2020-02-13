@@ -1,0 +1,14 @@
+/*中等PC屏幕下的专用样式*/
+@media screen and (min-width:992px) and (max-width: 1299px) {
+    .headC{
+        font-size: 24px;
+    }
+    .headL{
+        font-size: 12px;
+    }
+    .head_date, .heaf_c, .hearR_item{
+        white-space:nowrap;
+        overflow:hidden;               /* 内容超出宽度时隐藏超出部分的内容 */
+        text-overflow:ellipsis;
+    }
+}

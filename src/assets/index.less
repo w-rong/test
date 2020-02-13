@@ -1,0 +1,42 @@
+// @rimwidth: 470px;
+@rimwidth: 23.5rem;
+@rimheight: 15rem;
+
+.rimStyle{
+    width: @rimwidth;
+    height: @rimheight;
+    background: url('/static/img/rimbg.png') no-repeat;
+    background-size: cover;
+    margin-top: 0.75rem;
+
+    .title()
+}
+
+.title{
+    h3{
+        font-size: 1.1rem;
+        color: #CBEAFF;
+        text-align: center;
+        line-height: 2.95rem;
+    }
+}
+
+@keyframes rotate {
+    0%{
+        transform: rotate(0);
+    }
+
+    100%{
+        transform: rotate(360deg);
+    }
+}
+
+.move_rotate (@delay: 0s) {
+    animation: rotate 5s linear infinite @delay;
+}
+
+.flexDefault(@justify: center, @align: center) {
+    display: flex;
+    justify-content: @justify;
+    align-items: @align;
+}

@@ -1,0 +1,29 @@
+@font-face{
+    font-family: 'fzht';
+    src: url('../font/方正正中黑简体.ttf');
+}
+@font-face{
+    font-family: 'fzl2jw';
+    src: url('../font/FZL2JW.ttf');
+} 
+
+@font-face {
+    font-family: "fzcqjw";
+    src: url('../font/FZCQJW.ttf');
+    font-weight: normal;
+    font-style: normal;
+}  
+
+
+html, body, h1, ul, li, p{
+    padding: 0;
+    margin: 0;
+}
+li{
+    list-style: none;
+    /* float: left; */
+}
+
+html, body, #app {
+    height: 100%;
+}
