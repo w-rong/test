@@ -802,7 +802,6 @@ export default {
         margin-top: -11px;
         font-weight:bold;
         text-shadow:0px 1px 0px rgba(0, 0, 0, 1);
-        font-family: PingFang SC;
     }
     .vehicle_container{
         width: 100%;
@@ -835,7 +834,6 @@ export default {
         color: #CBEAFF;
         font-weight:bold;
         text-shadow:0px 1px 0px rgba(0, 0, 0, 1);
-        font-family: PingFang SC;
     }
     .V_carTotal_container{
         height: 88%;
@@ -934,5 +932,11 @@ export default {
     .V_city_container{
         height: 88%;
         width: 100%;
+    }
+    @media screen and (max-width: 1400px) {
+        .V_carTotal_container_top{
+            font-size: 13px;
+            line-height: 23px;
+        }
     }
     </style>

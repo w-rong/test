@@ -35,6 +35,8 @@
 </template>
 
 <script>
+
+import qs from 'qs'
 export default {
     data(){
         return {
@@ -316,12 +318,15 @@ export default {
         display: flex;
     }
     .pass_container{
-        width: 70%;
-        flex: 1;
+        /* width: 70%; */
+        width: 100%;
+        height: 82%;
+        /* flex: 1; */
         margin-left: 5%;
-        padding-right: 7%;
+        padding-right: 37%;
         /* margin: 0 auto; */
         display: flex;
+        box-sizing: border-box;
     }
     .total_date1{
         /* width: 20%; */

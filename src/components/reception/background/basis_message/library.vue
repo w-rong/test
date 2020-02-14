@@ -227,7 +227,7 @@ export default {
     // 获取图书馆列表
     async getLibraryList() {
       let res = await this.$http.get(
-        `	/base/listBaseLibrary?pagNumber=${this.currentPage}&pagSize=${this.pageSize}&unitName=${this.unitName}`
+        `/base/listBaseLibrary?pagNumber=${this.currentPage}&pagSize=${this.pageSize}&unitName=${this.unitName}`
       );
       console.log(res);
       if (res.data.msg == "success") {
@@ -238,7 +238,7 @@ export default {
     // 添加图书馆列表
     async addLibraryList() {
       let res = await this.$http.post(
-        `	/base/saveBaseLibrary`,
+        `/base/saveBaseLibrary`,
         qs.stringify({
           libraryName: this.ruleForm.name,
           address: this.ruleForm.address,
@@ -283,7 +283,7 @@ export default {
       this.editLibraryList.lat = this.ruleFormChange.lat;
       this.editLibraryList.tel = this.ruleFormChange.tel;
       let res = await this.$http.post(
-        `	/base/updateBaseLibrary`,
+        `/base/updateBaseLibrary`,
         qs.stringify(this.editLibraryList)
       );
       console.log(res);
@@ -302,7 +302,7 @@ export default {
     // 删除图书馆列表
     async delLibraryList(id) {
       console.log(id);
-      let res = await this.$http.delete(`	/base/deleteBaseLibrary?id=${id}`);
+      let res = await this.$http.delete(`/base/deleteBaseLibrary?id=${id}`);
       console.log(res);
       if (res.data.msg == "success") {
         this.getLibraryList();

@@ -69,7 +69,7 @@
                         </div>
                         <!-- 境外游客 -->
                         <div class="hotel_abroadTop5">
-                            <div class="hotel_sun_title_bg">
+                            <div class="hotel_sun_title_bg hotel_title_283">
                                 <div class="hotel_sun_title_txt">境外游客来源地Top5</div>
                             </div>
                             <div class="hotel_abroadTop5_content" ref="abroadTop5"></div>
@@ -107,7 +107,7 @@
                         </div>
                         <!-- 省外top5 -->
                         <div class="hotel_proOutTop5">
-                            <div class="hotel_sun_title_bg">
+                            <div class="hotel_sun_title_bg hotel_title_283">
                                 <div class="hotel_sun_title_txt">省外游客来源地Top5</div>
                             </div>
                             <div class="hotel_proOutTop5_content" ref="proOut"></div>
@@ -133,26 +133,59 @@ export default {
            proOutE: null,
            hotelDataE: null,
            touristVE: null,
+           hotelTotal: 0,
+           houseTotal: 0,
+           bedTotal: 0,  //床位
+           guestIn: 0,
+           guestOut: 0,
+           guestTotal: 0,
         }
     },
     methods: {
-        resource(){
+        // 获取床位
+        async baseInfo(){
+            var res = await this.$http.get(
+                `/base/getHotelData`
+            )
+            let {data} = res.data
+            this.hotelTotal = data.酒店总数
+            this.houseTotal = data.房间总数
+            this.bedTotal = data.床位总数
+        },
+        // 获取内外宾
+        async guest(){
+            var res = await this.$http.get(
+                `/base/getTouristsType`
+            )
+            let {data} = res.data
+            this.guestTotal = 0
+            data.forEach(element => {
+                this.guestTotal += Number(element.count)
+                if(element.nwblx == '内宾'){this.guestIn = element.count}
+                if(element.nwblx == '外宾'){this.guestOut = element.count}
+            });
+        },
+        // 省内
+        async resource(){
             this.resourceE = this.$echarts.init(this.$refs.resourceE)
-            // this.resourceE.showLoading()
-            var resourceName = ['舟山', '杭州', '宁波', '温州', '丽水', '台州', '湖州', '绍兴', '金华', '衢州', '嘉兴']
-            var resourceDate = [
-                            {value: 10, name: '舟山'},
-                            {value: 5, name: '杭州'},
-                            {value: 15, name: '宁波'},
-                            {value: 25, name: '温州'},
-                            {value: 20, name: '丽水'},
-                            {value: 35, name: '台州'},
-                            {value: 30, name: '湖州'},
-                            {value: 50, name: '绍兴'},
-                            {value: 44, name: '金华'},
-                            {value: 70, name: '衢州'},
-                            {value: 30, name: '嘉兴'},
-                        ]
+            this.resourceE.showLoading({textColor: '#fff',maskColor: 'rgba(255, 255, 255, 0)'})
+
+            var res = await this.$http.get(
+                `/base/getAllCityZheJiang`
+            )
+            let {data, code} = res.data
+            var resourceName = []
+            var resourceDate = []
+            for(var key in data){
+                resourceName.push(key)
+                resourceDate.push({name: key, value: data[key]})
+            }
+            if(code == 10000){
+                this.resourceE.hideLoading()
+            } else {
+                this.resourceE.hideLoading()
+            }
+
             var option = {
                 title:{
                     show: resourceDate.length == 0,//平常时设置为false，隐藏没有数据的文字提示
@@ -171,10 +204,10 @@ export default {
                     orient: 'vertical',
                     x: '65%',
                     // top: '3%',
-                    bottom: '20%',
+                    bottom: '10%',
                     itemWidth: 10,  // 设置宽度
                     itemHeight: 10, // 设置高度
-                    itemGap: 11,
+                    itemGap: 10,
                     textStyle:{
                         color: '#fff',
                         fontSize: 14
@@ -186,7 +219,8 @@ export default {
                     
                 },
                 grid: {
-                    bottom: '20%'
+                    top: '5%',
+                    bottom: '10%'
                 },
                 series: [
                     {
@@ -225,17 +259,34 @@ export default {
             window.addEventListener('resize', this.resizeHandler)
         },
         // 境外
-        abroadTop(){
+        async abroadTop(){
             this.abroadTop5E = this.$echarts.init(this.$refs.abroadTop5)
-            var dataAxis = ['澳门', '香港', '新加坡', '台湾','澳门',];
-            var data = [220, 182, 191, 234, 214];
-            var yMax = 500;
+            this.abroadTop5E.showLoading({textColor: '#fff',maskColor: 'rgba(255, 255, 255, 0)'})
+            var res = await this.$http.get(
+                `/base/getAbroadPersonCount`
+            )
+            let {data, code} = res.data
+            // console.log(res)
+            var dataAxis = [];
+            var outData = [];
+            var sortData = jsonSort(data[0], true)
+            sortData.forEach((item)=>{
+                if(item.name == 'Foreigners'){dataAxis.push('其他'); outData.push(item.value)}
+                if(item.name == 'HongKong'){dataAxis.push('香港'); outData.push(item.value)}
+                if(item.name == 'Macao'){dataAxis.push('澳门'); outData.push(item.value)}
+                if(item.name == 'Taiwan'){dataAxis.push('台湾'); outData.push(item.value)}
+            })
+            var yMax = Math.max(...outData)+50;
             var dataShadow = [];
-
             for (var i = 0; i < data.length; i++) {
                 dataShadow.push(yMax);
             }
 
+            if(code == 10000){
+                this.abroadTop5E.hideLoading()
+            } else {
+                this.abroadTop5E.hideLoading()
+            }
             var option = {
                 title: {
                     text: data.length == 0 ? '暂无数据' : '单位: 人',
@@ -343,7 +394,7 @@ export default {
                             },
                             
                         },
-                        data: data
+                        data: outData
                     }
                 ]
             };
@@ -503,8 +554,29 @@ export default {
             window.addEventListener('resize', this.resizeHandler)
         },
         // 酒店基础数据对比
-        hotelData(){
+        async hotelData(){
             this.hotelDataE = this.$echarts.init(this.$refs.hotelData)
+            this.hotelDataE.showLoading({textColor: '#fff',maskColor: 'rgba(255, 255, 255, 0)'})
+            var res = await this.$http.get(
+                `/base/getHotelLevel`
+            )
+            let {data, code} = res.data
+            console.log(res)
+            let name = []
+            let hotelData = []
+            let roomData = []
+            data.forEach((item)=>{
+                if(item.level == 0){name.push('经济型'); hotelData.push(item.hotelcount); roomData.push(item.roomcount)}
+                if(item.level == 1 || item.level == 2){name.push('舒适型'); hotelData.push(item.hotelcount); roomData.push(item.roomcount)}
+                if(item.level == 3|| item.level == 4){name.push('高档型'); hotelData.push(item.hotelcount); roomData.push(item.roomcount)}
+                if(item.level == 5){name.push('豪华型'); hotelData.push(item.hotelcount); roomData.push(item.roomcount)}
+                if(item.level == 6){name.push('农家乐'); hotelData.push(item.hotelcount); roomData.push(item.roomcount)}
+            })
+            if(code == 10000){
+                this.hotelDataE.hideLoading()
+            } else {
+                this.hotelDataE.hideLoading()
+            }
             var option = {
                 color: ['#00D6DA', '#0877C2', '#FA9837'],
                 tooltip: {
@@ -523,7 +595,7 @@ export default {
                     orient: 'vertical',
                     x: '85%',
                     top: '15%',
-                    data: ['酒店数', '房间数', '床位',  ],
+                    data: ['酒店数', '房间数'],
                     textStyle: {
                         color: '#5583AE'
                     }
@@ -547,7 +619,7 @@ export default {
                             }
                         },
                         interval: 0,
-                        data: ['经济型', '舒适型', '高档型', '豪华型', '民宿/农家乐']
+                        data: name
                     }
                 ],
                 yAxis: [
@@ -575,19 +647,37 @@ export default {
                         type: 'bar',
                         barWidth: '20%',
                         barGap: 0,
-                        data: [320, 332, 301, 334, 390]
+                        itemStyle:{
+                            normal: {
+                                label: {
+                                    show: true,
+                                    position: 'top',
+                                    textStyle: {
+                                        color: '#CBEAFF',
+                                        fontSize: 12   //柱形图每个柱上边的标注
+                                    },
+                                },
+                            }
+                        },
+                        data: hotelData
                     },
                     {
                         name: '房间数',
                         type: 'bar',
                         barWidth: '20%',
-                        data: [220, 182, 191, 234, 290]
-                    },
-                    {
-                        name: '床位',
-                        type: 'bar',
-                        barWidth: '20%',
-                        data: [150, 232, 201, 154, 190]
+                        itemStyle:{
+                            normal: {
+                                label: {
+                                    show: true,
+                                    position: 'top',
+                                    textStyle: {
+                                        color: '#CBEAFF',
+                                        fontSize: 12   //柱形图每个柱上边的标注
+                                    },
+                                },
+                            }
+                        },
+                        data: roomData
                     },
                     
                 ]
@@ -597,17 +687,32 @@ export default {
         },
 
         // 省外
-        proOut(){
+        async proOut(){
             this.proOutE = this.$echarts.init(this.$refs.proOut)
-            var dataAxis = ['澳门', '香港', '新加坡', '台湾','澳门',];
-            var data = [220, 182, 191, 234, 214];
-            var yMax = 500;
+            this.proOutE.showLoading({textColor: '#fff',maskColor: 'rgba(255, 255, 255, 0)'})
+            var res = await this.$http.get(
+                `/base/getTravelSource`
+            )
+            let {data, code} = res.data
+            var sortData = jsonSort(data, false).slice(0,5)
+            var sortData1 = sortData.sort(compare("value",true))
+            var dataAxis = [];
+            var proOutData = [];
+            sortData1.forEach((item)=>{
+                dataAxis.push(item.name)
+                proOutData.push(item.value)
+            })
+            var yMax = Math.max(...proOutData)+50;
             var dataShadow = [];
-
             for (var i = 0; i < data.length; i++) {
                 dataShadow.push(yMax);
             }
 
+            if(code == 10000){
+                this.proOutE.hideLoading()
+            } else {
+                this.proOutE.hideLoading()
+            }
             var option = {
                 title: {
                     text: data.length == 0 ? '暂无数据' : '单位: 人',
@@ -715,7 +820,7 @@ export default {
                                 ),
                             },
                         },
-                        data: data
+                        data: proOutData
                     }
                 ]
             };
@@ -736,6 +841,29 @@ export default {
         this.proOut()
         this.hotelData()
         this.touristVolume()
+        this.baseInfo()
+        this.guest()
+    }
+}
+function jsonSort(jsonObj, desc) {
+    let arr = [];
+    for (var key in jsonObj) {
+        arr.push({name:key, value: jsonObj[key]})
+    }
+    var newArr = arr.sort(compare("value",desc))
+    return newArr
+}
+function compare(property,desc) {
+    return function (a, b) {
+        var value1 = a[property];
+        var value2 = b[property];
+        if(desc==true){
+            // 升序排列
+            return value1 - value2;
+        }else{
+            // 降序排列
+            return value2 - value1;
+        }
     }
 }
 </script>
@@ -776,12 +904,11 @@ export default {
         margin-top: -11px;
         font-weight:bold;
         text-shadow:0px 1px 0px rgba(0, 0, 0, 1);
-        font-family: PingFang SC;
     }
     .hotel_container{
         width: 100%;
         height: 91.38%;
-        padding: 1% 0% 1% 1%;
+        padding: 0% 0% 1% 1%;
         box-sizing: border-box;
     }
     .grid-content{
@@ -793,6 +920,10 @@ export default {
         background: url('../../assets/hotel/F_l1_title.png') no-repeat;
         background-size: 100% 100%;
         position: relative;
+    }
+    .hotel_sun_title_bg.hotel_title_283{
+        background: url('../../assets/hotel/F_jingwai.png') no-repeat;
+        background-size: 100% 100%;
     }
     .hotel_sun_title_bg_r1{
         width: 100%;
@@ -819,7 +950,6 @@ export default {
         color: #CBEAFF;
         font-weight:bold;
         text-shadow:0px 1px 0px rgba(0, 0, 0, 1);
-        font-family: PingFang SC;
     }
     /* left */
     .hotel_count, .hotel_resource, .hotel_abroadTop5{

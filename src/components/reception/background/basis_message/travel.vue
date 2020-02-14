@@ -227,7 +227,7 @@ export default {
     // 获取旅行社列表
     async getTravelList() {
       let res = await this.$http.get(
-        `	/base/listBaseTravelData?pagNumber=${this.currentPage}&pagSize=${this.pageSize}&unitName=${this.unitName}`
+        `/base/listBaseTravelData?pagNumber=${this.currentPage}&pagSize=${this.pageSize}&unitName=${this.unitName}`
       );
       console.log(res);
       if (res.data.msg == "success") {

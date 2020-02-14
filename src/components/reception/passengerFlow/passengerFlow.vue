@@ -140,7 +140,7 @@ export default {
         width: 100%; 
         height: 68px;
         background: url('../../../assets/hotel/W_navDefault_bj.png') no-repeat;
-        background-size: 100% 100%;
+        background-size: auto 100%;
         cursor: pointer;
         margin-bottom: 16px;
     }
@@ -148,7 +148,7 @@ export default {
         width: 198px;
         height: 68px;
         background: url('../../../assets/hotel/W_navActive_bj.png') no-repeat;
-        background-size: 100% 100%;
+        background-size: auto 100%;
     }
     .P_nav_con_item_txt{
         line-height: 68px;
@@ -245,5 +245,19 @@ export default {
     .Passeng_container_item_content{
         width: 100%;
         height: 100%;
+    }
+    @media screen and (max-width: 1400px) {
+        .Passeng_container_nav_con{
+            padding-top: 33px;
+            box-sizing: border-box;
+        }
+        .P_nav_con_item.active, .P_nav_con_item{
+            height: 53px;
+        }
+        .P_nav_con_item_txt{
+            margin-left: 64px;
+            font-size: 14px;
+            line-height: 53px;
+        }
     }
 </style>

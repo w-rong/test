@@ -8,6 +8,7 @@
                     clear-icon="clearIcon"
                     v-model="beginValue"
                     value-format="yyyy-MM-dd"
+                    @change="beginChange"
                     type="date"
                     placeholder="选择日期">
                 </el-date-picker>
@@ -20,6 +21,8 @@
                     :clearable="false"
                     clear-icon="clearIcon"
                     v-model="endValue"
+                    ref="focesInput"
+                    @change="endChange"
                     value-format="yyyy-MM-dd"
                     type="date"
                     placeholder="选择日期">
@@ -32,43 +35,63 @@
 </template>
 
 <script>
+import moment from "moment"
 export default {
     data(){
         return {
-            beginValue: new Date(),
-            endValue: new Date(),
+            beginValue: moment(new Date(new Date().getTime() - 7 * 24 * 3600 * 1000)).format('YYYY-MM-DD'),
+            endValue: moment(new Date(new Date().getTime() - 1 * 24 * 3600 * 1000)).format('YYYY-MM-DD'),
             totalEc: null
         }
     },
     methods: {
-        totalEchartFn(){
+        async totalEchartFn(){
             this.totalEc = this.$echarts.init(this.$refs.totalechart)
-            var dataAxis = ['沈家门渔港小镇', '杉杉普陀天地', '舟山桃花岛', '普陀白沙岛','普陀山', '朱家尖', '干施岱村', '蚂蚁岛村', '东沙村', '白沙港村', '盐厂村', '东晓村', '塔湾村'];
-            var data = [220, 182, 191, 234, 214,220, 182, 191, 234, 214,343,232];
-            var yMax = 500;
+            this.totalEc.showLoading({textColor: '#fff',maskColor: 'rgba(255, 255, 255, 0)'})
+            
+            var res = await this.$http.get(
+                `/scenic/getScenicVolumeStatistics?startTime=${this.beginValue}&endTime=${this.endValue}`
+            )
+            let {data, code} = res.data
+            var dataAxis = [];
+            var scenicData = [];
+            var sortData = data.sort(compare("passengerNum",true))
+            if(sortData.length != 0){
+                sortData.forEach(item => {
+                    dataAxis.push(item.scenicName)
+                    scenicData.push(item.passengerNum)
+                });
+            }
+            var yMax = Math.max(...scenicData) + 100;
             var dataShadow = [];
 
-            for (var i = 0; i < data.length; i++) {
+            for (var i = 0; i < scenicData.length; i++) {
                 dataShadow.push(yMax);
             }
 
+            if(code == 10000){
+                this.totalEc.hideLoading()
+            } else {
+                this.totalEc.hideLoading()
+            }
             var option = {
-                title: {
-                    text: data.length == 0 ? '暂无数据' : '单位: （人次）',
-                    x: data.length == 0 ? 'center' : '48%',
-                    y: data.length == 0 ? 'center' : '95%',
-                    textStyle: {
-                        color: data.length == 0 ? '#bcbcbc' : '#58B9D8',
-                        fontWeight: data.length == 0 ? 600 :  400,
-                        fontSize: data.length == 0 ? 16 : 14
-                    }
+                title:{
+                    show: scenicData.length == 0,//平常时设置为false，隐藏没有数据的文字提示
+                    textStyle:{
+                        color:'#bcbcbc'
+                    },
+                    text:'暂无数据',
+                    left:'center',
+                    top:'center'
                 },
                 tooltip : {
                     trigger: 'axis',
                     axisPointer : {            // 坐标轴指示器，坐标轴触发有效
                         type : 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
                     },
-                    formatter: '{b} {c}'
+                    formatter: function(data){
+                            return data[1].axisValue + data[1].value+'人'
+                    }
                 },
                 xAxis: {
                     // name: '单位:(人次)',
@@ -133,7 +156,15 @@ export default {
                     { // For shadow
                         type: 'bar',
                         itemStyle: {
-                            color: 'rgba(0,39,71,1)'
+                            color: 'rgba(0,39,71,1)',
+                        },
+                        label: {
+                            normal: {
+                                show: false,
+                            },
+                            emphasis: {
+                                show: false,
+                            },
                         },
                         barGap: '-100%',
                         barCategoryGap: '40%',
@@ -163,12 +194,20 @@ export default {
                             },
                             
                         },
-                        data: data
+                        data: scenicData
                     }
                 ]
             };
             this.totalEc.setOption(option);
             window.addEventListener('resize', this.resizeHandler)
+        },
+        beginChange(data){
+            this.beginValue = data
+            this.$refs.focesInput.focus();
+        },
+        endChange(data){
+            this.endValue = data
+            this.totalEchartFn()
         },
         resizeHandler(){
             this.totalEc.resize()
@@ -176,6 +215,27 @@ export default {
     },
     mounted(){
         this.totalEchartFn()
+    }
+}
+function jsonSort(jsonObj, desc) {
+    let arr = [];
+    for (var key in jsonObj) {
+        arr.push({name:key, value: jsonObj[key]})
+    }
+    var newArr = arr.sort(compare("value",desc))
+    return newArr
+}
+function compare(property,desc) {
+    return function (a, b) {
+        var value1 = a[property];
+        var value2 = b[property];
+        if(desc==true){
+            // 升序排列
+            return value1 - value2;
+        }else{
+            // 降序排列
+            return value2 - value1;
+        }
     }
 }
 </script>

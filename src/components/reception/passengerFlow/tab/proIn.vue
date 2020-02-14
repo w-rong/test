@@ -45,8 +45,8 @@ export default {
         }
     },
     methods: {
-        provInMap(){
-            this.proInEchart = this.$echarts.init(this.$refs.proInEchart);
+        provInMap(proInMap){
+            var myChart = this.$echarts.init(this.$refs.proInEchart);
             var geoCoordMap = {
                 '上海': [121.4648, 31.2891],
                 '东莞': [113.8953, 22.901],
@@ -164,17 +164,17 @@ export default {
                 '韶关': [113.7964, 24.7028]
             };
             
+            // var BJData = proInMap;
             var BJData = [
-                [{ name: '舟山' }, { name: '湖州', value: 95 }],
-                [{ name: '舟山' }, { name: '杭州', value: 90 }],
-                [{ name: '舟山' }, { name: '金华', value: 80 }],
-                [{ name: '舟山' }, { name: '温州', value: 70 }],
-                [{ name: '舟山' }, { name: '绍兴', value: 60 }],
-                [{ name: '舟山' }, { name: '宁波', value: 50 }],
-                [{ name: '舟山' }, { name: '衢州', value: 40 }],
-                [{ name: '舟山' }, { name: '嘉兴', value: 30 }]
+                [ { name: '湖州', value: 95 }, { name: '舟山' }],
+                // [{ name: '舟山' }, { name: '杭州', value: 90 }],
+                // [{ name: '舟山' }, { name: '金华', value: 80 }],
+                [{ name: '温州', value: 70 }, { name: '舟山' }],
+                [ { name: '绍兴', value: 60 }, { name: '舟山' }],
+                [ { name: '宁波', value: 50 }, { name: '舟山' }],
+                // [ { name: '衢州', value: 40 }, { name: '舟山' }],
+                // [ { name: '嘉兴', value: 30 }, { name: '舟山' }]
             ];
-            
             var planePath = 'path://M1705.06,1318.313v-89.254l-319.9-221.799l0.073-208.063c0.521-84.662-26.629-121.796-63.961-121.491c-37.332-0.305-64.482,36.829-63.961,121.491l0.073,208.063l-319.9,221.799v89.254l330.343-157.288l12.238,241.308l-134.449,92.931l0.531,42.034l175.125-42.917l175.125,42.917l0.531-42.034l-134.449-92.931l12.238-241.308L1705.06,1318.313z';
             var convertData = function(data) {
                 var res = [];
@@ -198,7 +198,7 @@ export default {
             [
                 ['舟山', BJData],
             ].forEach(function(item, i) {
-                series.push({
+                series.push({   //飞行线
                     name: item[0],
                     type: 'lines',
                     zlevel: 1,
@@ -251,12 +251,11 @@ export default {
                         normal: {
                             show: true,
                             position: 'right',
-                            formatter: '{b}',
-                            color: '#fff'
+                            formatter: '{b}'
                         }
                     },
                     symbolSize: function(val) {
-                        return val[2] / 8;
+                        return val[2] / val[2] + 8;    //圈圈大小
                     },
                     itemStyle: {
                         normal: {
@@ -265,14 +264,14 @@ export default {
                         label:{
                             show: true,
                             textStyle:{
-                                fontSize: 15,
+                                fontSize: 14
                             }
                         }
                     },
                     data: item[1].map(function(dataItem) {
                         return {
-                            name: dataItem[1].name,
-                            value: geoCoordMap[dataItem[1].name].concat([dataItem[1].value])
+                            name: dataItem[0].name,
+                            value: geoCoordMap[dataItem[0].name].concat([dataItem[0].value])
                         };
                     })
                 });
@@ -280,16 +279,22 @@ export default {
             
             var option = {
                 tooltip: {
-                    trigger: 'item'
+                    trigger: 'item',
+                    formatter: function(data){
+                        // console.log(data)
+                        if(data){
+                            if(data.value){
+                                var dataD = data.value[2]
+                            } else {
+                                // var dataD = data.value[2]
+                            }
+                        }
+                        return dataD
+                    }
                 },
                 geo: {
-                    map: '浙江',      //省份地图
+                    map: '浙江',
                     label: {
-                        textStyle: {
-                            color: "#fff",
-                            fontSize: 12,
-                            fontFamily: "Arial"
-                        },
                         emphasis: {
                             show: false
                         }
@@ -320,9 +325,6 @@ export default {
                                 globalCoord: false // 缺省为 false
                             },
                             shadowColor: '0px 2px 68px 0px rgba(8,66,121,1)',
-                            // shadowOffsetX: -2,
-                            // shadowOffsetY: 2,
-                            // shadowBlur: 10
                         },
                         emphasis: {
                             areaColor: '#389BB7',
@@ -332,8 +334,7 @@ export default {
                 },
                 series: series
             };
-            this.proInEchart.setOption(option);
-            window.addEventListener('resize', this.resizeHandler)
+            myChart.setOption(option);
         },
         // top10
         scenicTop(){
@@ -477,11 +478,15 @@ export default {
         display: flex;
     }
     .pass_container{
-        width: 70%;
-        flex: 1;
-        /* margin: 0 auto; */
+        /* width: 70%; */
+        width: 100%;
+        height: 82%;
+        /* flex: 1; */
         margin-left: 5%;
+        padding-right: 37%;
+        /* margin: 0 auto; */
         display: flex;
+        box-sizing: border-box;
     }
     .total_date1{
         /* width: 20%; */

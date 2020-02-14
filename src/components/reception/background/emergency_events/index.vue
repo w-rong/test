@@ -158,7 +158,7 @@
         </div>
         <div v-if="btnIndex == 1" class="emergency_index_content_right_event_list_btn_content">
           <button type="button" @click="isPlanHandle=true">预案处理</button>
-          <button type="button" @click="isPersonHandle=true">人工处理</button>
+          <button type="button" @click="personHandle()">人工处理</button>
           <button type="button">不处理</button>
         </div>
         <div v-if="btnIndex == 2" class="emergency_index_content_right_event_list_btn_content">
@@ -208,15 +208,37 @@
             <td>联系方式</td>
             <td>操作</td>
           </tr>
-          <tr>
-            <td v-show="personList.length == ''" colspan="4" class="noinfo">没有找到匹配的记录</td>
+          <tr v-show="personList.length == ''">
+            <td  colspan="4" class="noinfo">没有找到匹配的记录</td>
           </tr>
           <tr v-for="(item, index) in personList" :key="index">
             <td style="width:12%">{{item.name}}</td>
             <td style="width:12%">{{item.sex | sex}}</td>
             <td style="width:10%">{{item.phone}}</td>
             <td style="width:10%;cursor: pointer;color:#495e66" @click="send(item)">
-              <i class="el-icon-share"></i>发送发送
+              <i class="el-icon-share"></i>发送
+            </td>
+          </tr>
+        </table>
+      </div>
+    </el-dialog>
+    <!-- 人工处理2 -->
+    <el-dialog title="预案处理" :visible.sync="isPlanHandleed" width="40%">
+      <div class="emergency_index_content_middle_PersonHandle">
+        <table>
+          <tr class="emergency_index_table_title">
+            <td>姓名</td>
+            <td>联系方式</td>
+            <td>操作</td>
+          </tr>
+          <tr v-show="personPlanList.length == ''">
+            <td  colspan="4" class="noinfo">没有找到匹配的记录</td>
+          </tr>
+          <tr>
+            <td style="width:12%">{{personPlanList.organPeople}}</td>
+            <td style="width:10%">{{personPlanList.organPhone}}</td>
+            <td style="width:10%;cursor: pointer;color:#495e66" @click="send(personPlanList)">
+              <i class="el-icon-share"></i>发送
             </td>
           </tr>
         </table>
@@ -234,7 +256,7 @@
       </span>
     </el-dialog>
     <!-- 人工处理 -->
-    <el-dialog title="人工处理" :visible.sync="isPlanHandle" width="50%">
+    <el-dialog title="预案处理" :visible.sync="isPlanHandle" width="50%">
       <div class="emergency_index_content_middle_PersonHandle">
         <table>
           <tr class="emergency_index_table_title">
@@ -262,12 +284,13 @@
       </div>
       <span slot="footer" class="dialog-footer">
         <el-button @click="isPlanHandle = false">取 消</el-button>
-        <el-button type="primary" @click="sendPerson()">确 定</el-button>
+        <el-button type="primary" @click="bindPlan()">确 定</el-button>
       </span>
     </el-dialog>
   </div>
 </template>
 <script>
+import qs from 'qs'
 export default {
   data() {
     return {
@@ -279,8 +302,10 @@ export default {
       isMore: false,
       isHanlle: false,
       isPlanHandle: false,
+      isPlanHandleed:false,
       isPersonHandle: false,
       isSetMsgContent: false,
+      isPlaned:0,
       phone: "",
       idLeft: "",
       smsContent: "",
@@ -288,6 +313,7 @@ export default {
       eventList: "",
       allMeetThingLists: [],
       personList: [],
+      personPlanList:[],
       meetPlanList:[],
       btnList: [{ name: "进度" }, { name: "处置" }, { name: "通讯录" }],
       btnIndex: 0,
@@ -429,13 +455,28 @@ export default {
     // 发送短信
     send(i) {
       this.isSetMsgContent = true;
-      this.phone = i.phone;
+      if (this.isPlaned == 0) {
+        this.phone = i.phone;
+        console.log(this.phone);
+      } else {
+        this.phone = i.organPhone;
+        console.log(this.phone);
+      }
     },
     async sendSms() {
       let res = await this.$http.get(
         `/emer/sendMagSms?content=${this.smsContent}&mobile=${this.phone}`
       );
       console.log(res);
+      this.$message({
+          message: res.data.msg,
+          type: 'success'
+        });
+        this.isSetMsgContent = false
+        this.isPlanHandleed = false
+        this.isPlanHandle = false
+        this.getLeftList();
+        this.isPersonHandle = false
     },
     changeBtn(i) {
       this.btnIndex = i;
@@ -443,7 +484,7 @@ export default {
       this.getMeetPlanList();
     },
     // 关联预案
-    async sendPerson(){
+    async bindPlan(){
       console.log(this.idLeft);
       console.log(this.planId);
       let res = await this.$http.post(
@@ -453,7 +494,41 @@ export default {
           planId2: this.planId
         })
       );
-      console.log(res);
+      // console.log(res);
+      if (res.data.msg=='success') {
+        // 查找预案
+        this.findPlan()
+      }
+    },
+    // 查找预案
+    async findPlan(){
+      console.log(this.planId);
+      let res = await this.$http.get(
+        `/emer/getEmergencyPlanById?id=${this.planId}`
+      );
+      // console.log(res);
+      if (res.data.msg=='success') {
+        // 查找预案
+        this.findOrg(res.data.data.orginId)
+      }
+    },
+    // 关联预案
+    async findOrg(id){
+      let res = await this.$http.get(
+        `/emer/getEmergencyOrganById?id=${id}`
+      );
+      // console.log(res);
+      if (res.data.msg=='success') {
+        // 查找预案
+          this.isPlaned = 1;
+          this.personPlanList = res.data.data
+          console.log(this.personPlanList);
+          this.isPlanHandleed=true
+      }
+    },
+    personHandle(){
+      this.isPersonHandle = true
+      this.isPlaned = 0
     }
   },
   mounted() {

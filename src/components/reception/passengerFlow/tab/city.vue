@@ -8,6 +8,7 @@
                     clear-icon="clearIcon"
                     v-model="beginValue"
                     value-format="yyyy-MM-dd"
+                    @change="beginChange"
                     type="date"
                     placeholder="选择日期">
                 </el-date-picker>
@@ -20,6 +21,8 @@
                     :clearable="false"
                     clear-icon="clearIcon"
                     v-model="endValue"
+                    ref="focesInput"
+                    @change="endChange"
                     value-format="yyyy-MM-dd"
                     type="date"
                     placeholder="选择日期">
@@ -32,35 +35,60 @@
 </template>
 
 <script>
+import moment from "moment"
+import qs from 'qs'
 export default {
     data(){
         return {
-            beginValue: new Date(),
-            endValue: new Date(),
+            beginValue: moment(new Date(new Date().getTime() - 7 * 24 * 3600 * 1000)).format('YYYY-MM-DD'),
+            endValue: moment(new Date(new Date().getTime() - 1 * 24 * 3600 * 1000)).format('YYYY-MM-DD'),
             totalEc: null
         }
     },
     methods: {
-        totalEchartFn(){
+        beginChange(data){
+            this.beginValue = data
+            this.$refs.focesInput.focus();
+        },
+        endChange(data){
+            this.endValue = data
+            this.totalEchartFn()
+        },
+        async totalEchartFn(){
+            var res = await this.$http.get(
+                `/aone/listAonePassengerHwSourceRegion`,
+                qs.stringify({
+                    endTime: '2020-01-06',
+                    startTime: '2020-01-06',
+                })
+            )
+            let {data, code} = res.data
+            var dataAxis = [];
+            var data1 = []
+            let sortData = data.sort(compare("index",false)).slice(0, 10)
+           
+            sortData.forEach(element => {
+                dataAxis.push(element.province)
+                data1.push(element.index)
+            });
+
             this.totalEc = this.$echarts.init(this.$refs.totalechart)
-            var dataAxis = ['广州', '南昌', '南宁', '长沙','珠海', '杭州', '郑州', '武汉', '重庆', '成都'];
-            var data = [2320, 1832, 1931, 2334, 2134,2230, 1812, 1941, 2434, 2444]
-            var yMax = 500;
+            var yMax = Math.max(...data1);
             var dataShadow = [];
 
-            for (var i = 0; i < data.length; i++) {
+            for (var i = 0; i < data1.length; i++) {
                 dataShadow.push(yMax);
             }
 
             var option = {
                 title: {
-                    text: data.length == 0 ? '暂无数据' : '单位: （人次）',
-                    x: data.length == 0 ? 'center' : '48%',
-                    y: data.length == 0 ? 'center' : '95%',
+                    text: data1.length == 0 ? '暂无数据' : '单位: （人次）',
+                    x: data1.length == 0 ? 'center' : '48%',
+                    y: data1.length == 0 ? 'center' : '95%',
                     textStyle: {
-                        color: data.length == 0 ? '#bcbcbc' : '#58B9D8',
-                        fontWeight: data.length == 0 ? 600 :  400,
-                        fontSize: data.length == 0 ? 16 : 14
+                        color: data1.length == 0 ? '#bcbcbc' : '#58B9D8',
+                        fontWeight: data1.length == 0 ? 600 :  400,
+                        fontSize: data1.length == 0 ? 16 : 14
                     }
                 },
                 tooltip : {
@@ -68,7 +96,9 @@ export default {
                     axisPointer : {            // 坐标轴指示器，坐标轴触发有效
                         type : 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
                     },
-                    formatter: '{b} {c}'
+                    formatter: function(data){
+                            return data[1].axisValue + data[1].value+'人'
+                    }
                 },
                 xAxis: {
                     type: 'category',
@@ -136,7 +166,10 @@ export default {
                         type: 'bar',
                         barWidth: '20%',
                         itemStyle: {
-                            color: 'rgba(0,39,71,1)'
+                            color: 'rgba(0,39,71,1)',
+                            emphasis: {
+                                show:false
+                            }
                         },
                         barGap: '-100%',
                         barCategoryGap: '40%',
@@ -165,7 +198,7 @@ export default {
                             },
                             
                         },
-                        data: data
+                        data: data1
                     }
                 ]
             };
@@ -178,6 +211,27 @@ export default {
     },
     mounted(){
         this.totalEchartFn()
+    }
+}
+function jsonSort(jsonObj, desc) {
+    let arr = [];
+    for (var key in jsonObj) {
+        arr.push({name:key, value: jsonObj[key]})
+    }
+    var newArr = arr.sort(compare("value",desc))
+    return newArr
+}
+function compare(property,desc) {
+    return function (a, b) {
+        var value1 = a[property];
+        var value2 = b[property];
+        if(desc==true){
+            // 升序排列
+            return value1 - value2;
+        }else{
+            // 降序排列
+            return value2 - value1;
+        }
     }
 }
 </script>
