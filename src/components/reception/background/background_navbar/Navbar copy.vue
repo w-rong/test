@@ -67,6 +67,28 @@ export default {
               path: "/basisAgritainment"
             },
             {
+              title: "旅行社管理",
+              path: "/basisTravel"
+            },
+            {
+              title: "休闲娱乐场所管理",
+              path: "/basisPlay"
+            },
+            {
+              title: "购物场所管理",
+              path: "/basisShopping"
+            },
+            {
+              title: "公共服务管理",
+              path: "/basisPublic"
+            },
+          ]
+        },
+        {
+          src: require('../../../../assets/img/thing.png'),
+          name: "其他",
+          paths: [
+             {
               title: "图书馆管理",
               path: "/basisLibrary"
             },
@@ -82,18 +104,6 @@ export default {
               title: "非遗场所管理",
               path: "/basisIch"
             },
-            {
-              title: "旅行社管理",
-              path: "/basisTravel"
-            },
-            {
-              title: "休闲娱乐场所管理",
-              path: "/basisPlay"
-            },
-            {
-              title: "购物场所管理",
-              path: "/basisShopping"
-            },
             // {
             //   title: "体育场馆管理",
             //   path: "/basisSports"
@@ -101,7 +111,123 @@ export default {
             {
               title: "单位管理",
               path: "/basisUnit"
-            }
+            },
+            {
+              title: "文博物馆管理",
+              path: "/basisWenMuseum"
+            },
+            {
+              title: "景区村管理",
+              path: "/basisSceCountry"
+            },
+            {
+              title: "船流分析管理",
+              path: "/basisShip"
+            },
+            {
+              title: "文化产业示范园区和示范基地管理",
+              path: "/basisCulturalExample"
+            },
+            {
+              title: "文化市场综合执法机构管理",
+              path: "/basisCulturalExecute"
+            },
+            {
+              title: "文化行政主管部门管理",
+              path: "/basisCulturalManage"
+            },
+            {
+              title: "文物保护管理机构管理",
+              path: "/basisCulturalProtect"
+            },
+            {
+              title: "文物保护科研机构管理",
+              path: "/basisCulturalProtectScience"
+            },
+            {
+              title: "文化艺术科研机构管理",
+              path: "/basisCulturalScience"
+            },
+            {
+              title: "文化站管理",
+              path: "/basisCulturalStation"
+            },
+            {
+              title: "教育机构管理",
+              path: "/basisEduOrgan"
+            },
+            {
+              title: "餐厅团购信息管理",
+              path: "/basisGroupBuy"
+            },
+            {
+              title: "导游信息管理",
+              path: "/basisGuide"
+            },
+            {
+              title: "文物拍卖企业管理",
+              path: "/basisHeritageAuction"
+            },
+            {
+              title: "文物商店信息管理",
+              path: "/basisHeritageShop"
+            },
+            {
+              title: "人文设施管理",
+              path: "/basisHumanity"
+            },
+            // {
+            //   title: "产业信息管理",
+            //   path: "/basisIndustry"
+            // },
+            {
+              title: "网吧信息管理",
+              path: "/basisInternetBar"
+            },
+            {
+              title: "其他文物企业管理",
+              path: "/basisOtherHeritage"
+            },
+            {
+              title: "表演场馆信息管理",
+              path: "/basisPerformVenue"
+            },
+            {
+              title: "红色旅游信息管理",
+              path: "/basisRedTravel"
+            },
+            {
+              title: "演出经纪机构管理",
+              path: "/basisShowBroker"
+            },
+            {
+              title: "特色菜名管理",
+              path: "/basisSpecialFood"
+            },
+            {
+              title: "特产信息管理",
+              path: "/basisSpecialty"
+            },
+            {
+              title: "厕所信息管理",
+              path: "/basisToilet"
+            },
+            {
+              title: "非物质文化遗产保护中心管理",
+              path: "/basisUnheritageCenter"
+            },
+            {
+              title: "非公有制艺术表演团体管理",
+              path: "/basisUnpubPerform"
+            },
+            {
+              title: "非公有制艺术表演场馆管理",
+              path: "/basisUnpubStation"
+            },
+            {
+              title: "乡村信息管理",
+              path: "/basisVillage"
+            },
           ]
         },
         //  {
@@ -206,6 +332,11 @@ export default {
     ...mapGetters(["routepath"])
   },
   created() {
+    if (this.$route.path == "/basisScenic" || this.$route.path == "/basisHotel" || this.$route.path == "/basisCatering"|| this.$route.path == "/basisAgritainment"|| this.$route.path == "/basisTravel"|| this.$route.path == "/basisPlay"|| this.$route.path == "/basisShopping" || this.$route.path == "/basisPublic") {
+      this.nowindex = 0;
+    } else {
+      this.nowindex = 1;
+    }
     // this.isBack();
   },
   watch: {

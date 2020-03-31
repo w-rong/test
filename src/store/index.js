@@ -3,6 +3,28 @@ import Vuex from 'vuex'
 import theindex from './modules/theindex';
 
 // vue过滤器
+// 过滤保留两位小数
+Vue.filter('fixed', function (value) {
+    
+        return value.toFixed(2)
+ 
+})
+// 过滤保留1位小数
+Vue.filter('fixedOne', function (value) {
+    
+        return value.toFixed(1)
+ 
+})
+// 过滤超过18个字...表示
+Vue.filter('omit', function (value) {
+    if (value.length<18) {
+        return value
+    } else {
+        return value.substring(0,18)+'...'
+    }
+    
+ 
+})
 // 过滤景区等级
 Vue.filter('scenicLevel', function (value) {
     if (value == 0) {
@@ -80,18 +102,14 @@ Vue.filter('eventLevel', function (value) {
 });
 // 过滤状态
 Vue.filter('eventStatus', function (value) {
-    if (value == 1) {
+    if (value == 0) {
         return '待处理'
-    } else if (value == 2) {
+    } else if (value == 1) {
         return '处理中'
+    } else if (value == 2) {
+        return '已完成'
     } else if (value == 3) {
-        return '已发布'
-    } else if (value == 4) {
-        return '已上报'
-    } else if (value == 5) {
-        return '已处理'
-    } else if (value == 6) {
-        return '已添加至应急案例'
+        return '审核完成'
     }
 });
 // 过滤预案级别
@@ -178,16 +196,7 @@ Vue.filter('isOrigin', function (value) {
         return '携程'
     }
 });
-// 过滤事件状态
-Vue.filter('eventStatus', function (value) {
-    if (value == '0') {
-        return '未处理'
-    } else if (value == '1') {
-        return '处理中'
-    } else if (value == '2') {
-        return '已完成'
-    }
-});
+
 Vue.use(Vuex)
 const store = new Vuex.Store({
     modules: {

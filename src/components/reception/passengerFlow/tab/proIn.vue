@@ -8,7 +8,9 @@
                     clear-icon="clearIcon"
                     v-model="beginValue"
                     value-format="yyyy-MM-dd"
+                    :picker-options="pickerOptions0"
                     type="date"
+                    @change="beginChange"
                     placeholder="选择日期">
                 </el-date-picker>
                 <div class="total_date1_down"></div>
@@ -20,13 +22,16 @@
                     :clearable="false"
                     clear-icon="clearIcon"
                     v-model="endValue"
+                    :picker-options="pickerOptions1"
+                    ref="focesInput"
+                    @change="endChange"
                     value-format="yyyy-MM-dd"
                     type="date"
                     placeholder="选择日期">
                 </el-date-picker>
                 <div class="total_date1_down"></div>
             </div>
-            <div class=" total_top10">客源地排行Top10</div>
+            <div class=" total_top10">客流量排行</div>
         </div>
         <div class="pass_container" ref="proInEchart"></div>
         <!-- 客源地排行 -->
@@ -35,17 +40,71 @@
 </template>
 
 <script>
+import moment from "moment"
 export default {
     data(){
         return {
-            beginValue: new Date(),
-            endValue: new Date(),
+            beginValue: moment(new Date(new Date().getTime() - 7 * 24 * 3600 * 1000)).format('YYYY-MM-DD'),
+            endValue:  moment(new Date(new Date().getTime() - 1 * 24 * 3600 * 1000)).format('YYYY-MM-DD'),
             proInEchart: null,
             scenicProInEc: null,
+            proName: [],
+            proData: [],
+            mapProData: [],
+            pickerOptions0: {
+                disabledDate: (time) => {
+                    return time.getTime() > new Date(new Date().getTime() - 1 * 24 * 3600 * 1000);
+
+                }
+            },
+            pickerOptions1: {
+                disabledDate: (time) => {
+                    // return time.getTime() > new Date(new Date().getTime() - 1 * 24 * 3600 * 1000);
+                    return time.getTime() <  new Date(this.beginValue).getTime() || time.getTime() > new Date(new Date().getTime() - 1 * 24 * 3600 * 1000)
+                }
+            }
         }
     },
     methods: {
-        provInMap(proInMap){
+        beginChange(data){
+            this.beginValue = data
+            // this.$refs.focesInput.focus();
+            this.getProData()
+        },
+        endChange(data){
+            this.endValue = data
+            this.getProData()
+        },
+        async getProData(){
+            var res = await this.$http.get(
+                `/aone/getZheJiangCityCount?endTime=${this.endValue.replace(/-/g, '')}&startTime=${this.beginValue.replace(/-/g, '')}`
+            )
+            this.mapProData = []
+            this.proName = []
+            this.proData = []
+            let{data} = res.data
+            if(data.length != 0){
+                data.forEach(item=>{
+                    if(item.city){
+                        this.mapProData.push(
+                            [{name: item.city.replace('市', ''), value: item.count}, {name: '舟山'}]
+                        )
+                    }
+                })
+                var sortData = data.sort(compare('count', true))
+                sortData.forEach(item=>{
+                    if(item.city){
+                        this.proName.push(item.city)
+                        this.proData.push(item.count)
+                    }
+                })
+                
+
+            }
+            this.provInMap()
+            this.scenicTop()
+        },
+         provInMap(proInMap){
             var myChart = this.$echarts.init(this.$refs.proInEchart);
             var geoCoordMap = {
                 '上海': [121.4648, 31.2891],
@@ -163,19 +222,21 @@ export default {
                 '青岛': [120.4651, 36.3373],
                 '韶关': [113.7964, 24.7028]
             };
+
             
-            // var BJData = proInMap;
-            var BJData = [
-                [ { name: '湖州', value: 95 }, { name: '舟山' }],
-                // [{ name: '舟山' }, { name: '杭州', value: 90 }],
-                // [{ name: '舟山' }, { name: '金华', value: 80 }],
-                [{ name: '温州', value: 70 }, { name: '舟山' }],
-                [ { name: '绍兴', value: 60 }, { name: '舟山' }],
-                [ { name: '宁波', value: 50 }, { name: '舟山' }],
-                // [ { name: '衢州', value: 40 }, { name: '舟山' }],
-                // [ { name: '嘉兴', value: 30 }, { name: '舟山' }]
-            ];
-            var planePath = 'path://M1705.06,1318.313v-89.254l-319.9-221.799l0.073-208.063c0.521-84.662-26.629-121.796-63.961-121.491c-37.332-0.305-64.482,36.829-63.961,121.491l0.073,208.063l-319.9,221.799v89.254l330.343-157.288l12.238,241.308l-134.449,92.931l0.531,42.034l175.125-42.917l175.125,42.917l0.531-42.034l-134.449-92.931l12.238-241.308L1705.06,1318.313z';
+            var BJData = this.mapProData;
+            // console.log(BJData)
+            // var BJData = [
+            //     [ { name: '湖州', value: 95 }, { name: '舟山' }],
+            //     // [{ name: '舟山' }, { name: '杭州', value: 90 }],
+            //     // [{ name: '舟山' }, { name: '金华', value: 80 }],
+            //     [{ name: '温州', value: 70 }, { name: '舟山' }],
+            //     [ { name: '绍兴', value: 60 }, { name: '舟山' }],
+            //     [ { name: '宁波', value: 50 }, { name: '舟山' }],
+            //     // [ { name: '衢州', value: 40 }, { name: '舟山' }],
+            //     // [ { name: '嘉兴', value: 30 }, { name: '舟山' }]
+            // ];
+            var planePath = 'path://M4560,4996.6c-530.4-68.2-932.1-239.8-1201.2-514.8c-156-159.9-508.9-803.4-598.6-1092c-50.7-161.9-52.7-384.2-11.7-840.5c39-421.2,42.9-386.1-54.6-432.9c-117-56.5-208.7-138.4-241.8-216.4c-23.4-58.5-23.4-72.2,7.8-136.5c44.8-93.6,93.6-99.4,263.2-31.2l134.6,54.6l58.5-58.5l58.5-58.5l-48.8-536.3C2822.5-3.2,2808.9-360.1,2846-1095.2c9.7-218.4,5.8-386.1-19.5-663c-66.3-723.5-2-1550.3,159.9-2039.7c72.1-216.4,157.9-366.6,278.8-487.5c87.8-89.7,142.3-122.9,304.2-189.2c349.1-146.3,805.3-257.4,1232.4-302.3c173.6-17.5,269.1-17.5,438.8,0c659.1,74.1,1347.5,298.3,1544.4,505.1c140.4,146.3,255.4,399.7,329.6,733.2c101.4,440.7,134.6,1197.3,80,1758.9c-42.9,432.9-46.8,838.5-11.7,982.8c40.9,165.8,9.8,733.2-107.2,1959.8l-50.7,524.6l58.5,56.6l56.6,56.6l150.1-62.4c175.5-74.1,228.1-64.3,265.2,48.8c39,122.9-42.9,235.9-251.6,341.3l-85.8,44.8l13.6,157.9c7.8,87.8,21.4,261.3,31.2,384.2c25.4,300.3,23.4,503.1-1.9,627.9c-29.3,128.7-397.8,863.9-514.8,1019.9c-222.3,298.3-563.6,489.5-1066.6,596.7C5470.7,5004.4,4797.9,5025.8,4560,4996.6z M5517.5,3073.9c444.6-76.1,811.2-255.5,1051.1-516.8c195-208.7,189.1-152.1,85.8-906.7c-48.8-358.8-93.6-657.2-97.5-661.1c-5.9-5.8-117,11.7-247.7,39c-544,111.2-762.4,134.6-1269.4,134.6c-522.6,2-717.6-19.5-1271.4-128.7c-169.6-33.1-312-56.5-315.9-52.6c-3.9,3.9-48.8,304.2-99.4,664.9l-89.7,657.2l48.8,85.8c56.5,93.6,232,273,356.9,362.7c255.4,183.3,663,313.9,1127.1,360.8C4936.4,3126.5,5338.1,3105.1,5517.5,3073.9z M6443.7-2179.4v-702l-70.2-76.1c-187.2-210.6-573.3-321.8-1197.3-347.1c-717.6-29.2-1302.6,101.4-1519.1,335.4l-80,87.8v692.3c0,380.2,7.8,692.2,15.6,692.2c9.8,0,81.9-17.5,161.9-37c319.8-81.9,618.1-107.3,1236.3-107.3c631.8,0,920.4,25.4,1255.8,113.1c91.6,25.3,173.6,46.8,183.3,48.8C6437.9-1479.4,6443.7-1793.3,6443.7-2179.4z';
             var convertData = function(data) {
                 var res = [];
                 for (var i = 0; i < data.length; i++) {
@@ -338,8 +399,8 @@ export default {
         },
         // top10
         scenicTop(){
-            var proInName = ['衢州','杭州', '嘉兴', '金华', '温州', '湖州', '绍兴', '宁波', '舟山',  ]
-            var proInData = ['21122', '22322', '23123', '31722', '33322', '41233','41252', '42322', '51233'  ]
+            var proInName = this.proName
+            var proInData = this.proData
             this.scenicProInEc = this.$echarts.init(this.$refs.scenicProIn)
             var option = {
                 title:{
@@ -353,6 +414,7 @@ export default {
                 },
                 tooltip: {
                     trigger: 'axis',
+                    formatter: '{b}{c}',
                     axisPointer: {
                         type: 'shadow'
                     }
@@ -387,6 +449,7 @@ export default {
                         show:false
                     },
                     axisLabel:{
+                        interval: 0,
                         textStyle: {
                             color: '#fff',
                             fontSize: 14
@@ -429,18 +492,41 @@ export default {
             window.addEventListener('resize', this.resizeHandler)
         },
         resizeHandler(){
-            this.proInEchart.resize()
+            // this.proInEchart.resize()
             this.scenicProInEc.resize()
         }
     },
     mounted(){
-        this.provInMap()
-        this.scenicTop()
+        // this.provInMap()
+        // this.scenicTop()
+        console.log(this.beginValue)
+        this.getProData()
+    }
+}
+function jsonSort(jsonObj, desc) {
+    let arr = [];
+    for (var key in jsonObj) {
+        arr.push({name:key, value: jsonObj[key]})
+    }
+    var newArr = arr.sort(compare("value",desc))
+    return newArr
+}
+function compare(property,desc) {
+    return function (a, b) {
+        var value1 = a[property];
+        var value2 = b[property];
+        if(desc==true){
+            // 升序排列
+            return value1 - value2;
+        }else{
+            // 降序排列
+            return value2 - value1;
+        }
     }
 }
 </script>
 
-<style>
+<style Scoped>
     .wh100{
         width: 100%;
         height: 100%;
@@ -448,6 +534,16 @@ export default {
     /*  */
     .clearIcon{
         content: '';
+    }
+    .el-date-editor.el-input.el-input--prefix.el-input--suffix.el-date-editor--month input{
+        color: #fff;
+    }
+    .el-date-editor.el-input.el-input--prefix.el-input--suffix.el-date-editor--month input{
+        color: #fff;
+    }
+    .el-picker-panel.down_date .el-date-table td.disabled div{
+        background-color: #072342;
+        color: #999;
     }
     .total_page .el-date-editor.el-input, .el-date-editor.el-input__inner{
         width: 100%;

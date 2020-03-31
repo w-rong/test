@@ -9,7 +9,8 @@
                 <div class="W_menuT_sider_bj"></div>
                 <div class="W_menuT_content">
                     <div class="W_menuT_item" v-for="(item, index) in scenicList" :key="index"  :class="{ active:index == iconNowIndex}" @click="changeScenic(item, index, iconNowIndex)">
-                        <div class="W_menuT_item_txt">{{item}}</div>
+                        <div class="W_menuT_item_txt">{{item | scenicReplace}}</div>
+                        <div class="W_menuT_item_rotate"  :class="{ active:index == iconNowIndex}"></div>
                     </div>
                 </div>
             </div>
@@ -18,36 +19,42 @@
                     <div class="W_right_top">
                         <div class="W_scenic_detail">
                             <p class="W_scenic_detail_name">{{scenicName}}</p>
-                            <p class="W_scenic_detail_date">{{putuoInfo.riqi}} {{putuoInfo.xingqi}}</p>
+                            <p class="W_scenic_detail_date">{{currDate}} {{currWeak}} {{currNongLi}}</p>
                             <p class="W_scenic_detail_wendu">
-                                实况：<span>{{putuoInfo.tianqi}}</span>  &nbsp;&nbsp;
-                                气温：<span>{{putuoInfo.qiwen}}</span><br/>
-                                风：<span>{{putuoInfo.fengxiang}}</span><br/>
+                                实况：<span>{{currWeater}}</span>  &nbsp;&nbsp;
+                                气温：<span>{{currWDmin}}~{{currWDmax}}°C</span><br/>
+                                风：<span>{{windDirectCn}}{{windLevelCn}}</span><br/>
                             </p>
-                            <p class="W_scenic_detail_richu"><img src="../../assets/hotel/W_sun_up.png" alt=""> 日出：<span>{{currDay.richu}}</span></p> 
-                            <p class="W_scenic_detail_riluo"><img src="../../assets/hotel/W_sun_down.png" alt=""> 日落：<span>{{currDay.riluo}}</span></p>
+                            <p class="W_scenic_detail_richu"><img src="../../assets/hotel/W_sun_up.png" alt=""> 日出：<span>{{richu}}</span></p> 
+                            <p class="W_scenic_detail_riluo"><img src="../../assets/hotel/W_sun_down.png" alt=""> 日落：<span>{{riluo}}</span></p>
                         </div>
                         <div class="W_scenic_weakWeater">
                             <div class="W_scenic_weater_item">
                                 <div class="W_scenic_weater_item_img W_sun">
-                                    <img :src="currDay.imgDate" alt="">
+                                    <img  v-if="aWeakLiat1.houres == 'whiteDay'" :src="dayImgList[0]" alt="">
+                                    <img  v-else :src="nightImgList[0]" alt="">
                                 </div>
-                                <div class="W_scenic_weater_item_wendu"><span>{{currDay.tianqi}}实时</span></div>
-                                <div class="W_scenic_weater_item_rander">{{currDay.currArr}}</div>
-                                <div class="W_scenic_weater_item_status">{{currDay.tianqi}}</div>
-                                <div class="W_scenic_weater_item_feng">{{currDay.fengxiang}} {{currDay.fengli}}</div>
+                                <div class="W_scenic_weater_item_wendu"><span class="currWendu">{{dryBulTemp}}</span> <span class="currCentigrade">℃</span><span> {{aWeakLiat1.dayWtString}}(实时)</span></div>
+                                <div class="W_scenic_weater_item_rander">{{aWeakLiat1.minTemp}}~{{aWeakLiat1.maxTemp}}℃</div>
+                                <div class="W_scenic_weater_item_status" v-if="aWeakLiat1.houres == 'whiteDay'">{{aWeakLiat1.dayWtString}}</div>
+                                <div class="W_scenic_weater_item_status" v-else>{{aWeakLiat1.nightWtString}}</div>
+                                <div class="W_scenic_weater_item_feng" v-if="aWeakLiat1.houres == 'whiteDay'">{{aWeakLiat1.dayWindD}} {{aWeakLiat1.dayWindV}}</div>
+                                <div class="W_scenic_weater_item_feng" v-else>{{aWeakLiat1.nightWindD}} {{aWeakLiat1.nightWindV}}</div>
                             </div>
-                            <div class="W_scenic_weater_item_more" v-for="(item, index) in weaterList" :key="index">
+                            <div class="W_scenic_weater_item_more" v-for="(item, index) in aWeakLiat" :key="index">
                                 <div class="W_scenic_weater_item_wendu  haveMarg">
-                                    <p>{{item.xingqi}}</p>
-                                    <p>{{item.riqi}}</p>
+                                    <p>{{item.weekDay}}</p>
+                                    <p>{{item.dateTime}}</p>
                                 </div>
                                 <div class="W_scenic_weater_item_img w38">
-                                    <img :src="item.imgDate" alt="">
+                                    <img :src="dayImgList[index + 1]" alt="">
+                                    <!-- <img  v-else :src="nightImgList[index + 1]" alt=""> -->
                                 </div>
-                                <div class="W_scenic_weater_item_rander">{{item.currArr}}</div>
-                                <div class="W_scenic_weater_item_status">{{item.tianqi}}</div>
-                                <div class="W_scenic_weater_item_feng">{{item.fengxiang}}{{item.fengli}}</div>
+                                <div class="W_scenic_weater_item_rander">{{item.minTemp}}~{{item.maxTemp}}℃</div>
+                                <div class="W_scenic_weater_item_status" v-if="item.houres == 'whiteDay'">{{item.dayWtString}}</div>
+                                <div class="W_scenic_weater_item_status" v-else>{{item.nightWtString}}</div>
+                                <div class="W_scenic_weater_item_feng" v-if="item.houres == 'whiteDay'">{{item.dayWindD}}{{item.dayWindV}}</div>
+                                <div class="W_scenic_weater_item_feng" v-else>{{item.nightWindD}}{{item.nightWindV}}</div>
                             </div>
                         </div>
                         
@@ -60,8 +67,8 @@
                                     <div class="W_scenic_bottom_icon_item_img">
                                         <img :src="item.url" alt="">
                                     </div>
-                                    <!-- <div class="W_scenic_bottom_icon_item_leave">{{item.leave}}</div> -->
-                                    <div class="W_scenic_bottom_icon_item_wendu">{{item.wendu}}℃</div>
+                                    <div class="W_scenic_bottom_icon_item_leave">{{item.windLevelCn}}</div>
+                                    <div class="W_scenic_bottom_icon_item_wendu">{{item.t}} <span class="centigrade">℃</span> </div>
                                 </div>
                             </div>
                             <div class="W_weater_hover" ref="weater_hoverEc"></div>
@@ -80,137 +87,235 @@ export default {
     components: {
         headtop
     },
+    filters:{
+        scenicReplace(value){
+            return value.replace('风景名胜区', '').replace('景区', '').replace('风景旅游区', '')
+        }
+    },
     data(){
         return{
+            currWDmin: '',  //最高温度
+            currWDmax: '',   //最低温度
+            windLevelCn: '',  //风级
+            windDirectCn: '',  //风向
+            currWeak: '',    //星期
+            currDate: '',  //日期
+            currNongLi: '',   //农历
+            currWeater: '',     //天气
+            dryBulTemp: '',     //当前温度
+            richu: '',
+            riluo: '',
             pageTitle: '天气罗盘',
-            iconNowIndex: 0,
             scenicName: '',
-            scenicList: ['普陀本岛','朱家尖','普陀山','东极岛','桃花岛','东福山岛','登步岛','白沙岛','虾峙岛'],
+            iconNowIndex: 0,
+            scenicList: [],  //景区列表
             currDay: null,
-            putuoInfo: null,
-            weaterList: [
-                {
-                    name: '周一',
-                    date: '1月8日',
-                    url: require('../../assets/hotel/W_leiYu.png'),
-                    rander: '-6~8C',
-                    qing: '雷雨',
-                    feng: '北风4级'
-                },
-                {
-                    name: '周二',
-                    date: '1月9日',
-                    url: require('../../assets/hotel/W_yin.png'),
-                    rander: '-3~8C',
-                    qing: '阴',
-                    feng: '北风2级'
-                },
-                {
-                    name: '周三',
-                    date: '1月10日',
-                    url: require('../../assets/hotel/W_yu.png'),
-                    rander: '-6~8C',
-                    qing: '雨',
-                    feng: '北风6级'
-                },
-                {
-                    name: '周四',
-                    date: '1月11日',
-                    url: require('../../assets/hotel/W_yu.png'),
-                    rander: '-6~9C',
-                    qing: '雨',
-                    feng: '北风4级'
-                },
-                {
-                    name: '周五',
-                    date: '1月12日',
-                    url: require('../../assets/hotel/W_yu.png'),
-                    rander: '-5~8C',
-                    qing: '雨',
-                    feng: '北风5级'
-                },
-                {
-                    name: '周六',
-                    date: '1月13日',
-                    url: require('../../assets/hotel/W_yu.png'),
-                    rander: '-11~8C',
-                    qing: '雨',
-                    feng: '北风4级'
-                }
-            ],
-            weterHour:[
-                {
-                    url: require('../../assets/hotel/W_hour_icon.png'),
-                    leave: '2级',
-                    wendu: '14.2C'
-                },
-                {
-                    url: require('../../assets/hotel/W_hour_icon.png'),
-                    leave: '2级',
-                    wendu: '14.2C'
-                },
-                {
-                    url: require('../../assets/hotel/W_hour_icon.png'),
-                    leave: '2级',
-                    wendu: '14.2C'
-                },
-                {
-                    url: require('../../assets/hotel/W_hour_icon.png'),
-                    leave: '2级',
-                    wendu: '14.2C'
-                },
-                {
-                    url: require('../../assets/hotel/W_hour_icon.png'),
-                    leave: '2级',
-                    wendu: '14.2C'
-                },
-                {
-                    url: require('../../assets/hotel/W_hour_icon.png'),
-                    leave: '2级',
-                    wendu: '14.2C'
-                },
-                {
-                    url: require('../../assets/hotel/W_hour_icon.png'),
-                    leave: '2级',
-                    wendu: '14.2C'
-                },
-                {
-                    url: require('../../assets/hotel/W_hour_icon.png'),
-                    leave: '2级',
-                    wendu: '14.2C'
-                },
-                {
-                    url: require('../../assets/hotel/W_hour_icon.png'),
-                    leave: '2级',
-                    wendu: '14.2C'
-                },
-                {
-                    url: require('../../assets/hotel/W_hour_icon.png'),
-                    leave: '2级',
-                    wendu: '14.2C'
-                },
-                {
-                    url: require('../../assets/hotel/W_hour_icon.png'),
-                    leave: '2级',
-                    wendu: '14.2C'
-                },
-                {
-                    url: require('../../assets/hotel/W_hour_icon.png'),
-                    leave: '2级',
-                    wendu: '14.2C'
-                },
-            ],
-            weaterHourEc: null
-        
+            aWeakLiat: [],
+            aWeakLiat1: null,
+            weaterList: [],
+            weterHour:[],
+            weaterHourEc: null,
+            lon: '',  //经度
+            lat: '',  //维度
+            dayImgList: [],
+            nightImgList: [],
+
         }
     },
     methods: {
+        // 景区列表
+        async getScenitList(){
+            var res = await this.$http.get(
+                `/scenic/findScenicListName`
+            )
+            let {data, code} = res.data
+            this.scenicList = []
+            data.forEach(element => {
+                this.scenicList.push(element.scenicName)
+            });
+            this.scenicName = this.scenicList[0]
+            
+            this.changeScenic(this.scenicName, 0)
+        },
+        // 实时天气
+        async getDetail(){
+            var res = await this.$http.get(
+                `/base/getPuTuoWeather`
+            )
+            let {data, code} = res.data
+            this.currWDmin = data.data.minTemp
+            this.currWDmax = data.data.maxTemp
+            this.dryBulTemp = data.data.dryBulTemp
+        },
+        // 景区实时
+        async scenicWeater(){
+            var res = await this.$http.get(
+                `/base/getScenicWeatherByHour?lat=${this.lat}&lon=${this.lon}`
+            )
+            let {data} = res.data.data
+            this.windDirectCn = data['windDirectCn']
+            this.windLevelCn = data['windLevelCn']
+            this.currWeater = data['ww']
+        },
+        // 日出日落
+        async getSUN(){
+            var res = await this.$http.get(
+                `/base/getSunRiseAndOut`
+            )
+            let {data} = res.data
+            this.richu = data.data.sunriseTime
+            this.riluo = data.data.sunsetTime
+        },
+        // 未来七天
+        async getAweak(){
+            var res = await this.$http.get(
+                `/base/getPuTuoWeatherWeek`
+            )
+            let data = res.data.data.data.list
+            this.dayImgList = []   //白天天气图片
+            this.nightImgList = []   //晚上天气图片
+            if(data.length != 0){
+                data.forEach(item=>{
+                    var dateDay =  item.dateTime.split(' ')[0].split('-')[1] +'月'+item.dateTime.split(' ')[0].split('-')[2]+'日'
+                    var houre =  item.dateTime.split(' ')[1].split(':')[0]
+                    item.dateTime = dateDay
+                    if(houre >= 8 && houre <= 18){
+                         item.houres = 'whiteDay'
+                    } else{
+                         item.houres = 'blackDay'
+                    }
+                    
+                    switch(item.dayWtString) {
+                        case '晴':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/1晴.gif')); break;
+                        case '少云':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/2少云.gif')); break;
+                        case '多云':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/3多云.gif')); break;
+                        case '阴天':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/4阴.gif')); break;
+                        case '阴':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/4阴.gif')); break;
+                        case '小雨':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/5雨.gif')); break;
+                        case '雨':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/5雨.gif')); break;
+                        case '中雨':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/6中雨.gif')); break;
+                        case '大雨':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/7大雨.gif')); break;
+                        case '暴雨':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/8暴雨.gif')); break;
+                        case '大暴雨':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/9大暴雨.gif')); break;
+                        case '特大暴雨':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/10特大暴雨.gif')); break;
+                        case '雷阵雨':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/11雷阵雨.gif')); break;
+                        case '浮尘':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/12浮尘.gif')); break;
+                        case '扬沙':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/13扬沙.gif')); break;
+                        case '雨夹雪':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/14雨夹雪.gif')); break;
+                        case '小雪':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/15小雪.gif')); break;
+                        case '雪':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/15小雪.gif')); break;
+                        case '中雪':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/16中雪.gif')); break;
+                        case '大雪':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/17大雪.gif')); break;
+                        case '暴雪':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/18暴雪.gif')); break;
+                        case '冻雨':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/19冻雨.gif')); break;
+                        case '沙尘暴':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/20沙尘暴.gif')); break;
+                        case '雷阵雨伴有冰雹':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/21雷阵雨伴有冰雹.gif')); break;
+                        case '强沙尘暴':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/22沙尘暴.gif')); break;
+                        case '雾':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/23雾.gif')); break;
+                        case '阵雪':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/24阵雪.gif')); break;
+                        case '阵雨':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/25阵雨.gif')); break;
+                        case '小到中雨':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/26小到中雨.gif')); break;
+                        case '中到大雨':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/27中到大雨.gif')); break;
+                        case '大到暴雨':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/28大到暴雨.gif')); break;
+                        case '暴雨到大暴雨':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/29暴雨到大暴雨.gif')); break;
+                        case '大暴雨到特大暴雨':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/30大暴雨到特大暴雨.gif')); break;
+                        case '小到中雪':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/31小到中雪.gif')); break;
+                        case '中到大雪':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/32中到大雪.gif')); break;
+                        case '大到暴雪':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/33大到暴雪.gif')); break;
+                        case '小雨转中雨':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/26小到中雨.gif')); break;
+                        case '中雨转大雨':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/27中到大雨.gif')); break;
+                        case '大雨转暴雨':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/28大到暴雨.gif')); break;
+                        case '小雪转中雪':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/31小到中雪.gif')); break;
+                        case '中雪转大雪':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/32中到大雪.gif')); break;
+                        case '大雪转暴雪':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/33大到暴雪.gif')); break;
+                        case '霾':
+                            this.dayImgList.push(require('../../assets/hotel/dayWhite/53雾霾.gif')); break;
+                        
+                            // 默认代码块
+                    }
+                })
+            }
+            this.aWeakLiat = data.splice(1,7)
+            this.aWeakLiat1 = data[0]
+        },
+        // 逐时
+        async getHoures(){
+            var res = await this.$http.get(
+                `/base/getWeatherByHour?lat=${this.lat}&lon=${this.lon}`
+            )
+            let {data} = res.data.data
+            console.log(res)
+            this.weterHour = []
+            var hourName = []
+            var hourData = []
+            if(data.length != 0){
+                var currData1 = data
+                var data12 = currData1.splice(0,12)
+                data12.forEach(item=>{
+                    this.weterHour.push(
+                        {
+                            url: require('../../assets/hotel/W_hour_icon.png'),
+                            windLevelCn: item.windLevelCn,
+                            t: item.t,
+                        }
+                    )
+                    hourName.push(item.forecastTime.slice(8,10)+':00' )
+                    hourData.push(item.t)
+                })
+                
+            }
+            console.log(hourName)
+            var that = this
+            setTimeout(() => {
+                
+                that.hourEc(hourName, hourData)
+            }, 500);
+        },
+        
         hourEc(hourName, hourData){
-            // console.log(hourName1)
-            // console.log(hourData1)
             this.weaterHourEc = this.$echarts.init(this.$refs.weater_hoverEc)
-            // var hourName = ['01:00', '02:00', '03:00']
-            // var hourData = [820, 932, 901]
             var option = {
                 grid: {
                     left: '3%',
@@ -274,8 +379,8 @@ export default {
                         color: new this.$echarts.graphic.LinearGradient(
                             0, 0, 0, 1,
                             [
-                                {offset: 0, color: '#00ccec'},
-                                {offset: 1, color: '#008bfb'}
+                                {offset: 0, color: '#1D9BCA'},
+                                {offset: 1, color: '#072745'}
 
                             ]
                         ),
@@ -288,165 +393,45 @@ export default {
         changeScenic(name, index, b){
             this.iconNowIndex = index
             this.scenicName = name
+            if(name == '杉杉普陀天地景区'){this.lon = '122.33512499'; this.lat = '29.98086562'}
+            if(name == '沈家门渔港小镇景区'){this.lon = '122.291953'; this.lat = '29.946139'}
+            if(name == '舟山桃花岛风景旅游区'){this.lon = '122.2720453'; this.lat = '29.820563'}
+            if(name == '普陀白沙岛景区'){this.lon = '122.41739181'; this.lat = '29.92633927'}
+            if(name == '普陀山风景名胜区'){this.lon = '122.397608'; this.lat = '30.007976'}
+            if(name == '朱家尖景区'){this.lon = '122.41312486'; this.lat = '29.88758923'}
+            if(name == '蚂蚁岛'){this.lon = '122.266022'; this.lat = '29.865191'}
+            if(name == '干施岱村'){this.lon = '122.282304'; this.lat = '30.014406'}
+            if(name == '东沙村'){this.lon = '122.414305'; this.lat = '29.885872'}
+            if(name == '东极岛'){this.lon = '122.683739'; this.lat = '30.19453'}
+            this.getHoures()
+            this.scenicWeater()
         },
-        async getScenitList(){
-            var res = await this.$http.get(
-                `/scenic/findScenicListName`
-            )
-            let {data, code} = res.data
-            // console.log(res)
-            this.scenicList = []
-            data.forEach(element => {
-                this.scenicList.push(element.scenicName)
-            });
-        },
+        
         // 
         async getWeater(){
             var res = await this.$http.get(
                 `/base/listWeatherForJiSu?nowCity=普陀区`
             )
             let {data, code} = res.data
-            console.log(res)
-            var weaterList7 = []
-            var xingqi = []
-            var dateList = []
-            var diwen = []
-            var currArr = []
-            var gaowen = []
-            var fengli = []
-            var fengxiang = []
-            var richu = []
-            var riluo = []
-            var imgDate = []   //图片数字
-            var tianqi = []   //图片数字
+            console.log(data)
+            this.currDate = data['日期']
+            this.currWeak = data['星期']
+            this.currNongLi = data['农历年日期']
+            // this.currWeater = data['天气']
 
-            var echartsTimeData = []
-            var echartsQWData = []
-            var echartsImgData = []
-
-            this.putuoInfo = {
-                xingqi: data['星期'], 
-                riqi: data['日期'], 
-                tianqi: data['天气'],
-                qiwen: data['气温 ℃'],
-                high: data['最高气温 ℃'],
-                low: data['最低气温 ℃'],
-                fengxiang: data['风向']
-            }
-            for(var key in data){
-                
-                if(key.indexOf('星期') != -1){
-                    if(key.length == 3){
-                        xingqi.push(data[key])
-                    }
-                }
-                if(key.indexOf('未来日期') != -1){
-                    dateList.push(data[key])
-                }
-                if(key.indexOf('最低温度') != -1){
-                    diwen.push(data[key])
-                }
-                if(key.indexOf('最高温度') != -1){
-                    gaowen.push(data[key])
-                }
-                if(key.indexOf('风力') != -1){
-                    fengli.push(data[key])
-                }
-                if(key.indexOf('风向') != -1){
-                    if(key.length == 3){
-                        fengxiang.push(data[key])
-                    }
-                }
-                if(key.indexOf('当前温度') != -1){
-                    currArr.push(data[key])
-                }
-                if(key.indexOf('日出') != -1){
-                    richu.push(data[key])
-                }
-                if(key.indexOf('日落') != -1){
-                    riluo.push(data[key])
-                }
-                if(key.indexOf('图片数字') != -1){
-                    if(key.length == 5){
-                        imgDate.push(data[key])
-                    }
-                }
-                if(key == '天气0'||key == '天气1'||key == '天气2'||key == '天气3'||key == '天气4'||key == '天气5'||key == '天气6'){ 
-                    tianqi.push(data[key])
-                }
-                if(key.indexOf('时间') != -1){
-                    for(var i = 0; i < 24; i++){
-                        if(key == '时间'+i){
-                            echartsTimeData.push(data[key])
-                        }
-                    }
-                }
-                if(key.indexOf('温度') != -1){
-                    for(var i = 0; i < 24; i++){
-                        if(key == '温度'+i){
-                            echartsQWData.push(data[key].replace('℃', ''))
-                        }
-                    }
-                }
-                if(key.indexOf('图片') != -1){
-                    for(var i = 0; i < 24; i++){
-                        if(key == '图片'+i){
-                            echartsImgData.push(data[key])
-                        }
-                    }
-                }
-            }
-            for(var i = 0; i < 7; i++){
-                weaterList7[i] = {
-                    xingqi: xingqi[i], 
-                    riqi: dateList[i], 
-                    imgDate: require('../../assets/hotel/weather/z'+ imgDate[i]+'.png'), 
-                    gaowen: gaowen[i], 
-                    diwen: diwen[i], 
-                    fengli: fengli[i], 
-                    fengxiang: fengxiang[i], 
-                    richu: richu[i], 
-                    riluo: riluo[i], 
-                    currArr: currArr[i],
-                    tianqi: tianqi[i]
-                }
-            }
             
-            this.weaterList =  weaterList7.slice(1,7)
-            this.currDay = weaterList7[0]
-            // console.log(weaterList7)
-            var newImgData = []
-            var newEchartTime = []
-            var newEchartQiwen = []
-            for(var i = 0; i < 24; i+=2){
-                newEchartTime.push(echartsTimeData[i])
-                newEchartQiwen.push(echartsQWData[i])
-                newImgData.push(echartsImgData[i])
-            }
-            this.weterHour = []
-            for(var i = 0; i<newEchartQiwen.length; i++){
-                this.weterHour.push(
-                    {
-                        url: require('../../assets/hotel/weather/z'+newImgData[i]+'.png'),
-                        wendu: newEchartQiwen[i],
-                    }
-                )
-            }
-            console.log(this.currDay)
-            var that = this
-            setTimeout(() => {
-                that.hourEc(newEchartTime, newEchartQiwen)
-            }, 2000);
         },
         resizeHandler(){
             this.weaterHourEc.resize()
         }
     },
     mounted(){
-        this.scenicName = this.scenicList[0]
-        this.getScenitList()
-        this.getWeater()
         
+        this.getScenitList()   //景区列表
+        this.getSUN()   //日出日落
+        this.getAweak()   //未来一周
+        this.getDetail()    //实时
+        this.getWeater()   //
     }
 }
 Array.prototype.unique = function () {
@@ -467,6 +452,7 @@ Array.prototype.unique = function () {
     .W_scenic_weater_item_wendu.haveMarg{
         margin-top: -25px;
     }
+    
     .weather{
         width: 100%;
         height: 100%;
@@ -511,7 +497,7 @@ Array.prototype.unique = function () {
     }
     .W_menuT_sider_bj{
         width: 91px;
-        height: 85%;
+        height: 92%;
         background: url('../../assets/hotel/W_side_bj.png') no-repeat;
         background-size: 100% 100%;
         position: absolute;
@@ -524,23 +510,49 @@ Array.prototype.unique = function () {
         padding-top: 65px;
         box-sizing: border-box;
         margin-left: 75px;
+        position: relative;
+    }
+    @keyframes mapRotateColor {  
+        0%{
+            -webkit-transform:rotate(0deg);
+        }
+        100%{
+            -webkit-transform:rotate(-360deg);
+        }
+    }
+    .W_menuT_item_rotate{
+        width: 62px;
+        height: 62px;
+        float: left;
+        position: absolute;
+        left: 9.8px;
+        top: 0;
+        background: url('../../assets/hotel/default_bg2.png') no-repeat;
+        background-size: 100% 100%;
+        z-index: 66;
+        -webkit-animation: mapRotateColor 3.7s 1s linear infinite;
+    }
+    .W_menuT_item_rotate.active{
+        background: url('../../assets/hotel/big2.png') no-repeat;
+        background-size: 100% 100%;
     }
     .W_menuT_item{
-        width: 298px;
-        height: 68px;
-        background: url('../../assets/hotel/W_navDefault_bj.png') no-repeat;
-        background-size: auto 100%;
+        width: 180px;
+        height: 62px;
+        background: url('../../assets/hotel/weater_icon_d.png') no-repeat;
+        background-size: 100% 100%;
         cursor: pointer;
+        position: relative;
     }
     .W_menuT_item.active{
-        width: 298px;
-        height: 68px;
-        background: url('../../assets/hotel/W_navActive_bj.png') no-repeat;
-        background-size: auto 100%;
+        width: 180px;
+        height: 62px;
+        background: url('../../assets/hotel/weater_icon_a.png') no-repeat;
+        background-size: 100% 100%;
     }
     .W_menuT_item_txt{
-        line-height: 68px;
-        font-size: 16px;
+        line-height: 62px;
+        font-size: 15px;
         margin-left: 79px;
         color: #fff;
     }
@@ -581,16 +593,18 @@ Array.prototype.unique = function () {
     }
     .W_scenic_detail_wendu{
         margin-top: 25px;
-        font-size: 16px;
+        font-size: 15px;
         line-height: 28px;
     }
     .W_scenic_detail_richu{
         margin-top: 35px;
         line-height: 34px;
+        font-size: 15px;
     }
     .W_scenic_detail_riluo{
         margin-top: 10px;
         line-height: 34px;
+        font-size: 15px;
     }
     .W_scenic_detail_richu img, .W_scenic_detail_riluo img{
         width: 35px;
@@ -610,15 +624,15 @@ Array.prototype.unique = function () {
         /* background-color: #fff; */
     }
     .W_scenic_weater_item, .W_scenic_weater_item_more{
-        width: 102px;
+        width: 125px;
         text-align: center;
         height: 100%;
-        font-size: 16px;
-        line-height: 16px;
+        font-size: 14px;
+        line-height: 14px;
         font-weight: 500;
         float: left;
         color: #9ebad0;
-        border-right: 1px solid #a5cdf5;
+        border-right: 1px solid rgba(165, 205, 245, 0.5);
     }
     .W_scenic_weater_item_more{
         flex: 1;
@@ -644,9 +658,21 @@ Array.prototype.unique = function () {
     .W_scenic_weater_item_wendu{
         height: 50px;
         margin-top: 10px;
+        position: relative;
     }
     .W_scenic_weater_item_wendu p{
         height: 27px; 
+    }
+    .currWendu{
+        font-size: 26px;
+        font-weight: bold;
+        letter-spacing: -1px
+    }
+    .currCentigrade{
+        position: absolute;
+        font-size: 14px;
+        font-weight: 600;
+        top: -14px;
     }
     .W_scenic_weater_item_rander{
         height: 16px;
@@ -709,13 +735,19 @@ Array.prototype.unique = function () {
     }
     .W_scenic_bottom_icon_item_wendu{
         height: 13px;
-        margin-top: 17px;
-
+        margin-top: 8px;
+        position: relative;
+    }
+    .W_scenic_bottom_icon_item_wendu .centigrade{
+        position: absolute;
+        top: -4px;
+        font-size: 12px;
     }
     .W_weater_hover{
         width: 100%;
         height: calc(100% - 100px);
     }
+    
 
 
 
@@ -742,6 +774,15 @@ Array.prototype.unique = function () {
     }
 
     @media screen and (max-width: 1400px) {
+        .W_scenic_detail{
+            width: 230px;
+        }
+        .W_scenic_weakWeater{
+            width: calc(100% - 230px);
+        }
+        .W_scenic_detail_name{
+            font-size: 22px;
+        }
         .W_right_bj{
             padding: 3% 10%;
         }
@@ -752,15 +793,18 @@ Array.prototype.unique = function () {
             margin-top: 0;
         }
         .W_scenic_detail_wendu, .W_scenic_detail_richu, .W_scenic_detail_riluo{
-            font-size: 14px;
+            font-size: 12px;
+        }
+        .W_scenic_detail_riluo{
+            margin-top: 0;
         }
         .W_scenic_bottom_icon{
-            height: 50px;
+            height: 60px;
             padding-top: 3px;
             box-sizing: border-box;
         }
         .W_weater_hover{
-            height: calc(100% - 50px);
+            height: calc(100% - 60px);
         }
         .W_scenic_bottom_name{
             font-size: 18px;
@@ -776,10 +820,10 @@ Array.prototype.unique = function () {
             margin-top: 12px;
         }
         .W_scenic_detail_richu{
-            margin-top: 13px;
+            margin-top: 10px;
         }
         .W_scenic_weater_item_more, .W_scenic_weater_item{
-            font-size: 13px;
+            font-size: 12px;
         }
         .W_scenic_weakWeater{
             height: 249px;
@@ -799,16 +843,21 @@ Array.prototype.unique = function () {
             margin-top: -19px;
         }
         .W_menuT_content{
-            padding-top: 40px;
+            padding-top: 46px;
             box-sizing: border-box;
         }
         .W_menuT_item.active, .W_menuT_item{
-            width: 235px;
+            width: 140px;
             height: 47px;
+        }
+        .W_menuT_item_rotate{
+            width: 47px;
+            height: 47px;
+            left: 8.9px;
         }
         .W_menuT_item_txt{
             margin-left: 54px;
-            font-size: 13px;
+            font-size: 12px;
             line-height: 47px;
         }
     }

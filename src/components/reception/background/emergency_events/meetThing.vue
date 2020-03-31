@@ -11,13 +11,15 @@
         <div class="emergency_events_thing_content_right_content_table">
           <table>
             <tr class="emergency_events_thing_content_right_content_table_title">
-              <td>创建人</td>
-              <td>创建时间</td>
+              <!-- <td>创建人</td> -->
+              <!-- <td>创建时间</td> -->
               <td>事件名称</td>
+              <td>发生时间</td>
               <td>事件内容</td>
               <td>事件等级</td>
               <td>事件类型</td>
               <td>事件状态</td>
+              <td>发生地点</td>
               <td>经度</td>
               <td>纬度</td>
               <td>操作</td>
@@ -26,13 +28,15 @@
               <td v-show="meetThingList.length == ''" colspan="10" class="noinfo">没有找到匹配的记录</td>
             </tr>
             <tr v-for="(item, index) in meetThingList" :key="index">
-              <td style="width:8%">{{item.inputName}}</td>
-              <td style="width:10%">{{item.inputTime | time}}</td>
+              <!-- <td style="width:8%">{{item.inputName}}</td> -->
+              <!-- <td style="width:10%">{{item.creatTime | time}}</td> -->
               <td style="width:8%">{{item.eventName}}</td>
+              <td style="width:8%">{{item.occurredTime}}</td>
               <td style="width:16%">{{item.eventContent}}</td>
               <td style="width:8%">{{item.eventLevel | eventLevel}}</td>
               <td style="width:10%">{{item.eventType | eventType}}</td>
               <td style="width:12%">{{item.eventStatus | eventStatus}}</td>
+              <td style="width:12%">{{item.occurredSite}}</td>
               <td style="width:8%">{{item.eventLng}}</td>
               <td style="width:8%">{{item.eventLat}}</td>
               <td style="width:12%">
@@ -66,14 +70,22 @@
             <!-- <el-row :span="24"> -->
             <el-row :span="22">
               <el-col :span="12">
+                <el-form-item label="上报人" prop="inputName">
+                  <el-input v-model="ruleForm.inputName"></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
                 <el-form-item label="事件名称" prop="eventName">
                   <el-input v-model="ruleForm.eventName"></el-input>
                 </el-form-item>
               </el-col>
+            </el-row>
+            <el-row :span="22">
               <el-col :span="12">
                 <el-form-item label="发生时间" prop="occurredTime">
                   <el-date-picker
                     placeholder="选择时间"
+                    type="datetime"
                     v-model="ruleForm.occurredTime"
                     style="width: 100%;"
                   ></el-date-picker>
@@ -110,21 +122,23 @@
                 </el-form-item>
               </el-col>
             </el-row>
-            <!-- <el-row :span="22">
+            <el-row :span="22">
               <el-col :span="12">
-                <el-form-item label="应急预案">
-                  <el-input v-model="ruleForm.plan"></el-input>
+                <el-form-item label="事件紧急状态" prop="eventUrgent" label-width="200">
+                  <el-select v-model="ruleForm.eventUrgent" placeholder="请选择事件紧急状态">
+                    <!-- <el-option label="未评级" value="0"></el-option> -->
+                    <el-option label="一般事件" value="一般事件"></el-option>
+                    <el-option label="紧急事件" value="紧急事件"></el-option>
+                    <el-option label="重大事件" value="重大事件"></el-option>
+                  </el-select>
                 </el-form-item>
               </el-col>
-              <el-col :span="6" style="margin-left:10px">
-                <el-button type="primary" plain size="small" @click="addPlan()">选择应急预案</el-button>
-              </el-col>
-            </el-row> -->
-            <el-row :span="22">
-              <el-form-item label="事件总结" prop="eventTotal">
+            </el-row>
+            <!-- <el-row :span="22">
+              <el-form-item label="事件总结">
                 <el-input v-model="ruleForm.eventTotal"></el-input>
               </el-form-item>
-            </el-row>
+            </el-row> -->
             <el-row :span="22" :gutter="20">
               <el-col :span="12">
                 <el-form-item label="发生地点" prop="occurredSite">
@@ -138,12 +152,12 @@
             <el-row :span="22">
               <el-col :span="12">
                 <el-form-item label="纬度" prop="eventLat">
-                  <el-input  v-model="ruleForm.eventLat"></el-input>
+                  <el-input v-model="ruleForm.eventLat"></el-input>
                 </el-form-item>
               </el-col>
               <el-col :span="12">
                 <el-form-item label="经度" prop="eventLng">
-                  <el-input  v-model="ruleForm.eventLng"></el-input>
+                  <el-input v-model="ruleForm.eventLng"></el-input>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -166,15 +180,23 @@
             <!-- <el-row :span="24"> -->
             <el-row :span="22">
               <el-col :span="12">
+                <el-form-item label="上报人" prop="inputName">
+                  <el-input v-model="ruleFormChange.inputName"></el-input>
+                </el-form-item>
+              </el-col>
+              <el-col :span="12">
                 <el-form-item label="事件名称" prop="eventName">
                   <el-input v-model="ruleFormChange.eventName"></el-input>
                 </el-form-item>
               </el-col>
+            </el-row>
+            <el-row :span="22">
               <el-col :span="12">
                 <el-form-item label="发生时间" prop="occurredTime">
                   <el-date-picker
                     placeholder="选择时间"
                     v-model="ruleFormChange.occurredTime"
+                    type="datetime"
                     style="width: 100%;"
                   ></el-date-picker>
                 </el-form-item>
@@ -210,6 +232,30 @@
                 </el-form-item>
               </el-col>
             </el-row>
+            <el-row :span="22">
+              <el-col :span="12">
+                <el-form-item label="事件紧急状态" prop="eventUrgent" label-width="200">
+                  <el-select v-model="ruleFormChange.eventUrgent" placeholder="请选择事件紧急状态">
+                    <!-- <el-option label="未评级" value="0"></el-option> -->
+                    <el-option label="一般事件" value="一般事件"></el-option>
+                    <el-option label="紧急事件" value="紧急事件"></el-option>
+                    <el-option label="重大事件" value="重大事件"></el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
+            <el-row :span="22">
+              <el-col :span="12">
+                <el-form-item label="事件状态" prop="eventStatus">
+                  <el-select v-model="ruleFormChange.eventStatus" placeholder="请选择事件状态">
+                    <el-option label="未处理" value="0"></el-option>
+                    <el-option label="处理中" value="1"></el-option>
+                    <el-option label="已处理" value="2"></el-option>
+                    <el-option label="审核完成" value="3"></el-option>
+                  </el-select>
+                </el-form-item>
+              </el-col>
+            </el-row>
             <!-- <el-row :span="22">
                 <el-col :span="12">
                   <el-form-item label="应急预案">
@@ -221,7 +267,7 @@
                 </el-col>
             </el-row>-->
             <el-row :span="22">
-              <el-form-item label="事件总结" prop="eventTotal">
+              <el-form-item label="事件总结">
                 <el-input v-model="ruleFormChange.eventTotal"></el-input>
               </el-form-item>
             </el-row>
@@ -238,12 +284,12 @@
             <el-row :span="22">
               <el-col :span="12">
                 <el-form-item label="纬度" prop="eventLat">
-                  <el-input  v-model="ruleFormChange.eventLat"></el-input>
+                  <el-input v-model="ruleFormChange.eventLat"></el-input>
                 </el-form-item>
               </el-col>
               <el-col :span="12">
                 <el-form-item label="经度" prop="eventLng">
-                  <el-input  v-model="ruleFormChange.eventLng"></el-input>
+                  <el-input v-model="ruleFormChange.eventLng"></el-input>
                 </el-form-item>
               </el-col>
             </el-row>
@@ -279,7 +325,9 @@
               </tr>
               <tr v-for="(item, index) in meetPlanList" :key="index">
                 <td style="width:3%">
-                  <el-radio v-model="planInfo" :label="item"><br></el-radio>
+                  <el-radio v-model="planInfo" :label="item">
+                    <br />
+                  </el-radio>
                 </td>
                 <td style="width:12%">{{item.planName}}</td>
                 <td style="width:8%">{{item.planLevel | levelPlan}}</td>
@@ -341,6 +389,7 @@ export default {
       meetThingList: [],
       editMeetThingList: [],
       ruleForm: {
+        inputName: "",
         eventName: "",
         eventContent: "",
         eventTotal: "",
@@ -350,9 +399,13 @@ export default {
         eventLat: "",
         eventLng: "",
         occurredTime: "",
-        plan: ""
+        plan: "",
+        eventUrgent: ""
       },
       rules: {
+        inputName: [
+          { required: true, message: "请输入上报人姓名", trigger: "blur" }
+        ],
         eventName: [
           { required: true, message: "请输入事件名称", trigger: "blur" }
         ],
@@ -367,6 +420,9 @@ export default {
         ],
         eventType: [
           { required: true, message: "请选择事件类型", trigger: "change" }
+        ],
+        eventUrgent: [
+          { required: true, message: "请选择事件紧急状态", trigger: "change" }
         ],
         eventLevel: [
           { required: true, message: "请选择事件等级", trigger: "change" }
@@ -387,6 +443,7 @@ export default {
         ]
       },
       ruleFormChange: {
+        inputName: "",
         eventName: "",
         eventContent: "",
         eventTotal: "",
@@ -396,9 +453,15 @@ export default {
         eventLat: "",
         eventLng: "",
         occurredTime: "",
-        plan: ""
+        plan: "",
+        eventStatus: "",
+        eventUrgent: "",
+        examineTimeDto: ""
       },
       rulesChange: {
+        inputName: [
+          { required: true, message: "请输入上报人姓名", trigger: "blur" }
+        ],
         eventName: [
           { required: true, message: "请输入事件名称", trigger: "blur" }
         ],
@@ -414,8 +477,14 @@ export default {
         eventType: [
           { required: true, message: "请选择事件类型", trigger: "change" }
         ],
+        eventUrgent: [
+          { required: true, message: "请选择事件紧急状态", trigger: "change" }
+        ],
         eventLevel: [
           { required: true, message: "请选择事件等级", trigger: "change" }
+        ],
+        eventStatus: [
+          { required: true, message: "请选择事件状态", trigger: "change" }
         ],
         eventLat: [
           { required: true, message: "请选择纬度", trigger: "change" }
@@ -486,7 +555,7 @@ export default {
     // 获取应急事件列表
     async getMeetThingList() {
       let res = await this.$http.get(
-        `/emer/listEmergencyEvent?pagNumber=${this.currentPage}&pagSize=${this.pageSize}&eventName=${this.unitName}`
+        `/emer/listEmergencyEvent?pagNumber=${this.currentPage}&pagSize=${this.pageSize}&eventName=${this.unitName}&eventStatus=0`
         // &eventName=${this.unitName}
       );
       console.log(res);
@@ -527,12 +596,13 @@ export default {
           eventName: this.ruleForm.eventName,
           eventTotal: this.ruleForm.eventTotal,
           occurredSite: this.ruleForm.occurredSite,
-          // occurredTime:this.ruleForm.occurredTime,
+          occurredTimeDto: this.ruleForm.occurredTime,
           eventType: this.ruleForm.eventType,
           eventLevel: this.ruleForm.eventLevel,
           eventLat: this.ruleForm.eventLat,
           eventLng: this.ruleForm.eventLng,
-          inputName: "admin",
+          inputName: this.ruleForm.inputName,
+          eventUrgent: this.ruleForm.eventUrgent
           // planId2: this.planId
           // occurredTime: this.ruleForm.occurredTime
         })
@@ -565,24 +635,55 @@ export default {
         this.ruleFormChange.eventLevel = this.editMeetThingList.eventLevel.toString();
         this.ruleFormChange.eventLat = this.editMeetThingList.eventLat;
         this.ruleFormChange.eventLng = this.editMeetThingList.eventLng;
+        this.ruleFormChange.eventStatus = this.editMeetThingList.eventStatus.toString();
+        this.ruleFormChange.occurredTime = this.editMeetThingList.occurredTime;
+        this.ruleFormChange.eventUrgent = this.editMeetThingList.eventUrgent;
+        this.ruleFormChange.inputName = this.editMeetThingList.inputName;
       }
     },
     // 编辑应急事件列表
     async editMeetThingLists() {
-      let res = await this.$http.post(
-        `/emer/updateEmergencyEvent`,
-        qs.stringify({
-          id: this.id,
-          eventContent: this.ruleFormChange.eventContent,
-          eventName: this.ruleFormChange.eventName,
-          eventTotal: this.ruleFormChange.eventTotal,
-          occurredSite: this.ruleFormChange.occurredSite,
-          eventType: this.ruleFormChange.eventType,
-          eventLevel: this.ruleFormChange.eventLevel,
-          eventLat: this.ruleFormChange.eventLat,
-          eventLng: this.ruleFormChange.eventLng
-        })
-      );
+      if (this.ruleFormChange.eventStatus.toString() == "3") {
+        this.ruleFormChange.examineTimeDto = new Date();
+        var res = await this.$http.post(
+          `/emer/updateEmergencyEvent`,
+          qs.stringify({
+            id: this.id,
+            eventContent: this.ruleFormChange.eventContent,
+            eventName: this.ruleFormChange.eventName,
+            eventTotal: this.ruleFormChange.eventTotal,
+            occurredSite: this.ruleFormChange.occurredSite,
+            eventType: this.ruleFormChange.eventType,
+            eventLevel: this.ruleFormChange.eventLevel,
+            eventLat: this.ruleFormChange.eventLat,
+            eventLng: this.ruleFormChange.eventLng,
+            eventStatus: this.ruleFormChange.eventStatus,
+            occurredTimeDto: new Date(this.ruleFormChange.occurredTime),
+            eventUrgent: this.ruleFormChange.eventUrgent,
+            examineTimeDto: this.ruleFormChange.examineTimeDto,
+            inputName: this.ruleFormChange.inputName
+          })
+        );
+      } else {
+        var res = await this.$http.post(
+          `/emer/updateEmergencyEvent`,
+          qs.stringify({
+            id: this.id,
+            eventContent: this.ruleFormChange.eventContent,
+            eventName: this.ruleFormChange.eventName,
+            eventTotal: this.ruleFormChange.eventTotal,
+            occurredSite: this.ruleFormChange.occurredSite,
+            eventType: this.ruleFormChange.eventType,
+            eventLevel: this.ruleFormChange.eventLevel,
+            eventLat: this.ruleFormChange.eventLat,
+            eventLng: this.ruleFormChange.eventLng,
+            eventStatus: this.ruleFormChange.eventStatus,
+            occurredTimeDto: new Date(this.ruleFormChange.occurredTime),
+            eventUrgent: this.ruleFormChange.eventUrgent,
+            inputName: this.ruleFormChange.inputName
+          })
+        );
+      }
       console.log(res);
       if (res.data.msg == "success") {
         this.isedited = false;
@@ -684,12 +785,13 @@ export default {
 <style>
 .emergency_events_thing_all_content {
   width: 100%;
-  /* height: 100%; */
+  height: 100%;
   background-color: #f4f4f4;
 }
 .emergency_events_thing_content {
   margin-left: calc(210px);
-  height: 1080px;
+  height: calc(100% - 50px);
+  overflow-y: auto;
   background-color: #fff;
   position: relative;
 }
@@ -753,6 +855,7 @@ export default {
   border: 1px solid #ccc;
   text-align: center;
   padding: 10px 0;
+  line-height: 20px;
 }
 .basis_edit {
   color: #0095ff;

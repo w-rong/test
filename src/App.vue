@@ -19,8 +19,12 @@ export default {
 #app, html, body{
   width: 100%;
   height: 100%;
+  overflow: hidden;
 }
 li, ul{
   list-style: none;
 }
+/* .el-icon-close:before{
+  color: #000!important;
+} */
 </style>

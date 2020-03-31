@@ -11,6 +11,22 @@
                     <p>{{i[1]}}</p>
                     <p>{{i[0]}}</p>
                 </div>
+                <!-- <div class="img">
+                    <img src="" alt="" :style="{width: imgs[idx].wh ? '100%' : 'auto', height: !imgs[idx].wh ? '100%' : 'auto'}">
+                </div>
+                <div class="text">
+                    <p></p>
+                    <p>{{i[0]}}</p>
+                </div> -->
+            </li>
+            <li>
+                <div class="img">
+                    <img src="../../../assets/img/brigade/more.png" alt="" style="width:100%">
+                </div>
+                <div class="text">
+                    <p></p>
+                    <p style="cursor:pointer;" @click="skip()">更多</p>
+                </div>
             </li>
         </ul>
     </div>
@@ -45,12 +61,20 @@ export default {
         }
     },
     mounted () {
-        axios.get('/base/getAllSourceCount', {params: {isDelete: 0}})
+        axios.get('/base/getAllSourceCountMin', {params: {isDelete: 0}})
             .then(data => {
-                this.list = Object.entries(data.data.data).splice(0,12)
+                this.list = Object.entries(data.data.data).splice(0,11)
                 // console.log(Object.entries(data).splice(0,9));
             })
+    },
+    methods: {
+    skip() {
+      const { href } = this.$router.resolve({
+        path: "/gis"
+      });
+      window.open(href, "_blank");
     }
+  }
 }
 </script>
 

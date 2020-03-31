@@ -17,6 +17,8 @@
               <td>编制时间</td>
               <td>编制单位</td>
               <td>所属分组</td>
+              <td>机构</td>
+              <td>添加机构</td>
               <td>操作</td>
             </tr>
             <tr>
@@ -29,6 +31,13 @@
               <td style="width:10%">{{item.compileTime}}</td>
               <td style="width:10%">{{item.compileUnit}}</td>
               <td style="width:10%">{{item.groupType}}</td>
+              <td style="width:10%">
+                <div v-for="(org, index) in item.emsOrginId" :key="index">{{org.organName}}</div>
+              </td>
+              <td
+                style="width:10%;font-size:12px;cursor: pointer;color: #0095ff;"
+                @click="addOrg(item.id)"
+              >选择机构</td>
               <td style="width:10%">
                 <i class="el-icon-edit basis_edit" @click="change(item.id)">编辑</i>
                 <i class="el-icon-delete basis_del" @click="del(item.id)">删除</i>
@@ -63,17 +72,16 @@
                   <el-input v-model="ruleForm.planName"></el-input>
                 </el-form-item>
               </el-col>
-              <!-- <el-col :span="12">
+              <el-col :span="12">
                 <el-form-item label="编制日期">
                   <el-date-picker
                     type="date"
                     placeholder="选择日期"
-                    value-format="yyyy-MM-dd"
                     v-model="ruleForm.CompileTime"
                     style="width: 100%;"
                   ></el-date-picker>
                 </el-form-item>
-              </el-col>-->
+              </el-col>
               <el-col :span="12">
                 <el-form-item label="预案级别">
                   <el-select
@@ -115,7 +123,7 @@
                   </el-form-item>
                 </el-col>
               </el-col>
-              <el-col :span="24">
+              <!-- <el-col :span="24">
                 <el-col :span="12">
                   <el-form-item label="应急机构">
                     <el-input v-model="ruleForm.org"></el-input>
@@ -124,7 +132,7 @@
                 <el-col :span="6" style="margin-left:10px">
                   <el-button type="primary" plain size="small" @click="addOrg()">选择应急机构</el-button>
                 </el-col>
-              </el-col>
+              </el-col>-->
               <el-col :span="24">
                 <el-form-item label="备注">
                   <el-input v-model="ruleForm.remark"></el-input>
@@ -152,7 +160,7 @@
                   <el-input v-model="ruleFormChange.planName"></el-input>
                 </el-form-item>
               </el-col>
-              <!-- <el-col :span="12">
+              <el-col :span="12">
                 <el-form-item label="编制日期">
                   <el-date-picker
                     type="date"
@@ -162,7 +170,7 @@
                     style="width: 100%;"
                   ></el-date-picker>
                 </el-form-item>
-              </el-col>-->
+              </el-col>
               <el-col :span="12">
                 <el-form-item label="预案级别">
                   <el-select
@@ -225,9 +233,34 @@
               </el-col>
             </el-row>
           </el-form>
+          <div v-if="editMeetPlanList != ''" class="emergency_plan_content_right_content_table">
+            <table style="width:100%">
+              <tr class="emergency_plan_content_right_content_table_title">
+                <td>机构名称</td>
+                <td>机构职责</td>
+                <td>机构主要负责人</td>
+                <td>机构联系电话</td>
+                <td>机构地址</td>
+                <td>操作</td>
+              </tr>
+              <tr v-if="editMeetPlanList.emsOrginId[0].oId == null">
+                <td colspan="6" class="noinfo">没有找到匹配的记录</td>
+              </tr>
+              <tr v-else v-for="(item, index) in editMeetPlanList.emsOrginId" :key="index">
+                <td style="width:12%">{{item.organName}}</td>
+                <td style="width:8%">{{item.organDuty}}</td>
+                <td style="width:12%">{{item.organPeople}}</td>
+                <td style="width:10%">{{item.organPhone}}</td>
+                <td style="width:10%">{{item.organAddress}}</td>
+                <td style="width:10%">
+                  <i class="el-icon-delete basis_del" @click="delOrg(item.oId)">删除</i>
+                </td>
+              </tr>
+            </table>
+          </div>
           <span slot="footer" class="dialog-footer">
             <el-button type="primary" @click="submitFormChange('ruleFormChange')">确定</el-button>
-            <el-button @click="isedited=false">取消</el-button>
+            <el-button @click="cancelEdit()">取消</el-button>
           </span>
         </el-dialog>
         <!-- 选择机构弹框 -->
@@ -242,12 +275,17 @@
                 <td>机构联系电话</td>
                 <td>机构地址</td>
               </tr>
-              <tr>
-                <td v-show="orgList.length == ''" colspan="6" class="noinfo">没有找到匹配的记录</td>
+              <tr v-if="orgList.length == ''">
+                <td colspan="6" class="noinfo">没有找到匹配的记录</td>
               </tr>
-              <tr v-for="(item, index) in orgList" :key="index">
+              <tr v-else v-for="(item, index) in orgList" :key="index">
                 <td style="width:3%">
-                  <el-radio v-model="orgInfo" :label="item"><br></el-radio>
+                  <el-checkbox-group v-model="orgInfo">
+                    <el-checkbox :label="item.oId" :key="item.oId">
+                      <br />
+                    </el-checkbox>
+                  </el-checkbox-group>
+                  <!-- <el-checkbox v-model="orgInfo" :label="item"><br></el-checkbox> -->
                 </td>
                 <td style="width:12%">{{item.organName}}</td>
                 <td style="width:8%">{{item.organDuty}}</td>
@@ -299,7 +337,8 @@ export default {
       peopleName: "",
       editId: "",
       orgId: "",
-      orgInfo: "",
+      orgInfo: [2],
+      orgIdChoose: [],
       orgList: [],
       meetPlanList: [],
       editMeetPlanList: [],
@@ -378,7 +417,7 @@ export default {
     // 获取机构列表
     async getOrgList() {
       let res = await this.$http.get(
-        `/emer/listEmergencyOrgan?pagNumber=${this.currentPage1}&pagSize=${this.pageSize}`
+        `/emer/listEmergencyOrganByGroupByName?pagNumber=${this.currentPage1}&pagSize=${this.pageSize}`
       );
       console.log(res);
       if (res.data.msg == "success") {
@@ -386,19 +425,38 @@ export default {
         this.allAccount1 = res.data.data.total;
       }
     },
-    addOrg() {
+    async addOrg(id) {
+      console.log(id);
+      this.editId = id;
       this.isOrged = true;
+      this.orgInfo = [];
       this.getOrgList();
+      // let res = await this.$http.get(`/emer/getEmergencyPlanById?pid=${id}`);
+      // console.log(res);
+      // if (res.data.msg == "success") {
+      // }
     },
     // 选择应急机构
-    chooseOrg() {
+    async chooseOrg() {
       this.orgId = this.orgInfo.id;
-      // console.log(this.orgId);
-      // console.log(this.orgInfo);
-      // console.log(this.orgInfo.organId);
-      this.ruleForm.org = this.orgInfo.organName;
-      this.ruleFormChange.org = this.orgInfo.organName;
-      this.isOrged = false;
+      this.orgInfo.forEach(async element => {
+        var res = await this.$http.post(
+          `/emer/insertWithOrgan`,
+          qs.stringify({
+            planId: this.editId,
+            organId: element
+          })
+        );
+        console.log(res);
+        if (res.data.msg == "success") {
+          this.$message({
+            type: "success",
+            message: "添加成功!"
+          });
+          this.getMeetPlanList();
+          this.isOrged = false;
+        }
+      });
     },
     // 添加应急预案列表
     async addMeetPlanList() {
@@ -406,7 +464,7 @@ export default {
         `/emer/saveEmergencyPlan`,
         qs.stringify({
           planName: this.ruleForm.planName,
-          compileTime: this.ruleForm.CompileTime,
+          compileTimeDto: this.ruleForm.CompileTime,
           compileUnit: this.ruleForm.CompileUnit,
           groupType: this.ruleForm.groupType,
           planLevel: this.ruleForm.PlanLevel,
@@ -427,11 +485,29 @@ export default {
         this.$message.error(res.data.msg);
       }
     },
+    // 删除对应机构
+    async delOrg(id) {
+      let res = await this.$http.delete(`/emer/deleteEmergencyOrgan?id=${id}`);
+      console.log(res);
+      if (res.data.msg == "success") {
+        this.getEditMeetPlanList(this.editId);
+        this.$message({
+          type: "success",
+          message: "删除成功!"
+        });
+      } else {
+        this.$message.error(res.data.msg);
+      }
+    },
+    cancelEdit() {
+      this.isedited = false;
+      this.getMeetPlanList();
+    },
     // 获取编辑应急预案列表
     async getEditMeetPlanList(id) {
       this.editId = id;
       console.log(id);
-      let res = await this.$http.get(`/emer/getEmergencyPlanById?id=${id}`);
+      let res = await this.$http.get(`/emer/getEmergencyPlanById?pid=${id}`);
       console.log(res);
       if (res.data.msg == "success") {
         this.editMeetPlanList = res.data.data;
@@ -574,12 +650,14 @@ export default {
 <style>
 .emergency_plan_all_content {
   width: 100%;
-  /* height: 100%; */
+  height: 100%;
   background-color: #f4f4f4;
 }
 .emergency_plan_content {
   margin-left: calc(210px);
-  height: 1080px;
+  /* height: 1080px; */
+  height: calc(100% - 50px);
+  overflow-y:auto ;
   background-color: #fff;
   position: relative;
 }
@@ -643,6 +721,7 @@ export default {
   border: 1px solid #ccc;
   text-align: center;
   padding: 10px 0;
+  line-height: 20px;
 }
 .basis_edit {
   color: #0095ff;

@@ -1,11 +1,11 @@
 <template>
-  <div class="list_box">
+  <div class="list_box" ref="nav_ul">
     <div class="list" :class="nowindex==index?'whitecolor':''" @click="showornot">
       <slot></slot>
       <span :class="nowindex==index?'arrow_left':'arrow_bottom'" class="arrow"></span>
     </div>
     <transition name="move">
-      <ul class="nav_ul" v-show="nowindex==index" :style="{height:items.length*30-5+'px'}">
+      <ul class="nav_ul" ref="nav_ul_little"  v-show="nowindex==index" :style="{height:items.length*32+'px'}">
         <li v-for="(item, index) in items" :key="index">
           <router-link :to="item.path">
             <strong><span @click="currentindex(index)" :class="$route.path==item.path?'bluecolor':''">{{item.title}}</span></strong>
@@ -84,6 +84,11 @@ export default {
       }
     }
   },
+  mounted() {
+    if (this.$refs.nav_ul_little.style.height>document.body.clientHeight - 120+'px') {
+      this.$refs.nav_ul_little.style.height= document.body.clientHeight - 120+'px';
+    } 
+  },
 };
 </script>
 <style>
@@ -99,11 +104,13 @@ ul,li{
 }
 .list_box{
   height: 100%;
+  overflow-y: auto;
 }
 .nav_ul {
   margin: 0;
   overflow: hidden;
   padding-left:55px;
+  overflow-y: auto;
 }
 .nav_ul a{
     color: inherit;

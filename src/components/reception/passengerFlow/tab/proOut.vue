@@ -8,6 +8,8 @@
                     clear-icon="clearIcon"
                     v-model="beginValue"
                     value-format="yyyy-MM-dd"
+                    :picker-options="pickerOptions0"
+                    @change="beginChange"
                     type="date"
                     placeholder="选择日期">
                 </el-date-picker>
@@ -21,6 +23,9 @@
                     clear-icon="clearIcon"
                     v-model="endValue"
                     value-format="yyyy-MM-dd"
+                    ref="focesInput"
+                    @change="endChange"
+                    :picker-options="pickerOptions1"
                     type="date"
                     placeholder="选择日期">
                 </el-date-picker>
@@ -37,46 +42,118 @@
 <script>
 
 import qs from 'qs'
+import moment from "moment"
 export default {
     data(){
         return {
-            beginValue: new Date(),
-            endValue: new Date(),
+            beginValue: moment(new Date(new Date().getTime() - 7 * 24 * 3600 * 1000)).format('YYYY-MM-DD'),
+            endValue: moment(new Date(new Date().getTime() - 1 * 24 * 3600 * 1000)).format('YYYY-MM-DD'),
             proInEchart: null,
             scenicProInEc: null,
+            mapData: [],
+            proInName: [],
+            proInData: [],
+            pickerOptions0: {
+                disabledDate: (time) => {
+                    return time.getTime() > new Date(new Date().getTime() - 1 * 24 * 3600 * 1000);
+                
+                }
+            },
+            pickerOptions1: {
+                disabledDate: (time) => {
+                    return time.getTime() <  new Date(this.beginValue).getTime() || time.getTime() > new Date(new Date().getTime() - 1 * 24 * 3600 * 1000)
+                }
+            }
         }
     },
     methods: {
+        beginChange(data){
+            this.beginValue = data
+            this.getProOutData()
+            // this.$refs.focesInput.focus();
+        },
+        endChange(data){
+            this.endValue = data
+            this.getProOutData()
+        },
+        async getProOutData(){
+            var startTime = this.beginValue.replace(/-/g, '')
+            var endTime = this.endValue.replace(/-/g, '')
+            var res = await this.$http.get(
+                // `/aone/getProvinceCount?endTime=20200131&startTime=20200101`
+                `/aone/getProvinceCount?endTime=${endTime}&startTime=${startTime}`
+            )
+            let{data} = res.data
+            // console.log(data)
+            this.mapData = []
+            this.proInName = []
+            this.proInData = []
+            if(data.length != 0){
+                data.forEach(element => {
+                    this.mapData.push(
+                        {
+                            name: element.province.replace(/省|市/g, ''),
+                            value: element.count
+                        }
+                    )
+
+                });
+                var sortData = data.sort(compare('count',false)).slice(0,10)
+                var top10 = sortData.sort(compare('count',true))
+                top10.forEach(item=>{
+                    this.proInName.push(item.province)
+                    this.proInData.push(item.count)
+                })
+            }
+
+            this.proOutEch()
+            this.scenicTop()
+        },
         // map
         proOutEch(){
             this.proInEchart = this.$echarts.init(this.$refs.proInEchart)
             var myData = [
                 {name: '舟山', value: [122.207216, 29.985295, 123]}
             ]
-            var data = [
-                {
-                    name: '郑州',
-                    value: 20 //扩散的大小
-                },
-                {
-                    name: '北京',
-                    value: 16
-                },
-                {
-                    name: '香港',
-                    value: 12
-                },
-                {
-                    name: '上海',
-                    value: 14
-                },
-            ];
-            var geoCoordMap = {
-                '郑州': [113.649638, 34.75659],
-                '香港': [114.186133, 22.29343],
-                '北京': [116.395645, 39.92998],
-                '上海': [121.487884, 31.24910]
-            };
+            var geoCoordMap = {}
+            var data = []
+            var mapName = 'china'
+            var mapFeatures = this.$echarts.getMap(mapName).geoJson.features;
+             mapFeatures.forEach(function(v) {
+                // 地区名称
+                var name = v.properties.name;
+                // 地区经纬度
+                geoCoordMap[name] = v.properties.cp;
+                data.push({
+                    name: name,
+                    value: Math.round(Math.random() * 70 + 60)
+                })
+            });
+            // var data = [
+            //     {
+            //         name: '郑州',
+            //         value: 20000 //扩散的大小
+            //     },
+            //     {
+            //         name: '北京',
+            //         value: 16000
+            //     },
+            //     {
+            //         name: '香港',
+            //         value: 12000
+            //     },
+            //     {
+            //         name: '上海',
+            //         value: 14000
+            //     },
+            // ];
+            data = this.mapData
+            // geoCoordMap = {
+            //     '郑州': [113.649638, 34.75659],
+            //     '香港': [114.186133, 22.29343],
+            //     '北京': [116.395645, 39.92998],
+            //     '上海': [121.487884, 31.24910]
+            // };
  
             var convertData = function(data) {
                 var res = [];
@@ -96,7 +173,7 @@ export default {
                 tooltip: {
                     trigger: 'item',
                     formatter: function(obj) {
-                        return obj.name + '：' + obj.value[0] + '，' + obj.value[1];
+                        return obj.name + '：' + obj.value[2] +'人' ;
                     },
                     textStyle: {
                         fontSize: 18
@@ -105,12 +182,16 @@ export default {
                 series: [{
                     type: 'effectScatter',
                     coordinateSystem: 'geo',
-                    data: convertData(data.sort(function(a, b) {
-                        return b.value - a.value;
-                    }).slice(0, 6)),
+                    // data: convertData(data.sort(function(a, b) {
+                    //     return b.value - a.value;
+                    // }).slice(0, 6)),
+                    data: convertData(data),
                     symbolSize: function(val) {
-                        return val[2] / 10;
+                        return 2;
                     },
+                    // symbolSize: function(val) {
+                    //     return val[2] / 10000;
+                    // },
                     showEffectOn: 'render',
                     zlevel: 2,
                     rippleEffect: {
@@ -233,14 +314,14 @@ export default {
                         },
                         interval: 0
                     },
-                    data: proInName
+                    data: this.proInName
                 },
                 series: [
                     {
                         name: '来源地',
                         type: 'bar',
                         barWidth: '25%',
-                        data: proInData,
+                        data: this.proInData,
                         itemStyle: {
                             normal: {
                                 label: {
@@ -274,20 +355,45 @@ export default {
         }
     },
     mounted(){
-        this.scenicTop()
-        this.proOutEch()
+        this.getProOutData()
+        // this.scenicTop()
+        // this.proOutEch()
+    }
+}
+function compare(property,desc) {
+    return function (a, b) {
+        var value1 = a[property];
+        var value2 = b[property];
+        if(desc==true){
+            // 升序排列
+            return value1 - value2;
+        }else{
+            // 降序排列
+            return value2 - value1;
+        }
     }
 }
 </script>
 
-<style>
+<style Scoped>
     .wh100{
         width: 100%;
         height: 100%;
     }
+    .el-date-editor.el-input.el-input--prefix.el-input--suffix.el-date-editor--month input{
+        color: #fff;
+    }
     /*  */
     .clearIcon{
         content: '';
+    }
+    .el-picker-panel.down_date .el-date-table td.disabled div{
+        background-color: #072342;
+        color: #999;
+    }
+    .el-picker-panel.down_date .el-date-table td.disabled div{
+        background-color: #072342;
+        color: #999;
     }
     .total_page .el-date-editor.el-input, .el-date-editor.el-input__inner{
         width: 100%;

@@ -1,10 +1,10 @@
 <template>
     <div class="common_nav" >
-        <h3 @click="shoeNavList">首页</h3>
+        <h3 @click="shoeNavList">综合首页</h3>
         <transition name="slide-fade">
             <ul v-if="navshow">
                 <!-- <li>首页</li> -->
-                    <router-link  tag="li" v-for="(item, index) in navList" :key="index" :to="{path: item.path}" >{{item.name}}</router-link>
+                    <router-link  tag="li" v-for="(item, index) in navList" :key="index" :to="{path: item.path}">{{item.name}}</router-link>
             </ul>
         </transition>
     </div>
@@ -42,7 +42,7 @@ export default {
             navList: [
                 {name: '首页', path: '/'},
                 {name: '天气罗盘', path: '/weather'},
-                {name: '景区客流量统计', path: '/passengerFlow'},
+                {name: '景区客流量', path: '/passengerFlow'},
                 {name: '车流量统计', path: '/vehicleTotal'},
                 {name: '视频监控', path: '/monitor'},
                 {name: '旅游消费', path: '/touristXF'},
@@ -55,10 +55,10 @@ export default {
     directives: {clickoutside},
     methods: {
         shoeNavList(){
-            console.log('dkfldklf')
+            // console.log('dkfldklf')
         },
         shownav () {
-            console.log('show')
+            // console.log('show')
             this.navshow = true
         },
         handleClose () {

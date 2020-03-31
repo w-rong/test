@@ -5,16 +5,20 @@
                 <headtop :title='pageTitle'/>
             <!-- </div> -->
             <!-- <div class="BP_title_txt">游客画像分析</div> -->
-            <div class="BP_selectElement">
-                <el-select v-model="scenicNameSelectValue" placeholder="请选择" @change="selectScenic" 
-                        popper-class="mySelectStyle">
-                    <el-option
-                        v-for="(item,index) in listScinic"
-                        :key="index"
-                        :label="item.scenicName"
-                        :value="item.scenicName">
-                    </el-option>
-                </el-select>
+            <div class="total_date1_basic">
+                <el-date-picker
+                    popper-class="down_date"
+                    :clearable="false"
+                    :editable="false"
+                    clear-icon="clearIcon"
+                    v-model="mounthValue"
+                    value-format="yyyy-MM"
+                    type="month"
+                    @change="choseMonth"
+                    :picker-options="pickerOptions1"
+                    placeholder="选择日期">
+                </el-date-picker>
+                <!-- <div class="total_date1_down"></div> -->
             </div>
         </div>
         <div class="BP_container">
@@ -28,15 +32,31 @@
                             <div class="BP_info_1_title">
                                 <div class="BP_info_1_title_txt">性别</div>
                             </div>
-                            <div class="BP_info_1_con">
+                            <div class="BP_info_1_con gender">
                                 <div class="BP_info_1_nan">
                                     <img src="../../assets/hotel/man.png" alt="">
-                                    <div class="BP_info_1_nan_data">{{Number(male).toFixed(2)}}%</div>
+                                    <div class="BP_info_1_nan_data">{{Number(Number(male)*100).toFixed(2)}}%</div>
                                 </div>
-                                <div class="BP_info_1_echart" ref="BP_gender"></div>
+                                <div class="BP_info_1_echart" ref="BP_gender" v-if="inResize">
+                                    <svg :width="genderR * 2 + 10" :height="genderR * 2 + 10" version="1.1"  class="pie"
+                                            xmlns="http://www.w3.org/2000/svg">
+                                        <circle :cx="genderWidth" :cy="genderWidth" :r="genderR - 5" stroke="#08b0ff" class="ring manchart">
+                                            <animate attributeName="stroke-dashoffset" :to="-getVal(male, 251)" dur="1s" fill="freeze"></animate>
+                                        </circle>
+                                        <circle :cx="genderWidth" :cy="genderWidth" :r="genderR * 0.7" stroke="rgba(0,87,168,0.1)" class="ring"></circle>
+                                        <circle :cx="genderWidth" :cy="genderWidth" :r="genderR * 0.7" stroke="#ff78ba" class="ring womanchart">
+                                            <animate attributeName="stroke-dashoffset" :to="getVal(female, 198)" dur="1s" fill="freeze"></animate>
+                                        </circle>
+                                        <circle :cx="genderWidth" :cy="genderWidth" :r="genderR" stroke="rgba(0,87,168,0.5)" fill="none" stroke-width="2"></circle>
+                                        <circle :cx="genderWidth" :cy="genderWidth" :r="genderR * 0.75" stroke="rgba(0,87,168,0.5)" fill="none" stroke-width="2"></circle>
+                                        <circle :cx="genderWidth" :cy="genderWidth" r="2" fill="#0057A8"></circle>
+                                        <line :x1="genderWidth" :y1="genderWidth" :x2="genderWidth" y2="0" stroke="#0057A8"></line>
+                                        <line :x1="genderWidth" :y1="genderWidth" :x2="endPoint[0]" :y2="endPoint[1]" stroke="#0057A8" class="endline"></line>
+                                    </svg>
+                                </div>
                                 <div class="BP_info_1_nv">
                                     <img src="../../assets/hotel/woman.png" alt="">
-                                    <div class="BP_info_1_nan_nv">{{Number(female).toFixed(2)}}%</div>
+                                    <div class="BP_info_1_nan_nv">{{Number(Number(1 - male)*100).toFixed(2)}}%</div>
                                 </div>
                             </div>
                         </div>
@@ -56,11 +76,32 @@
                             </div>
                             <div class="BP_info_2_title_line"></div>
                         </div>
-                        <div class="BP_info_2_content">
-                            <div class="BP_info_2_item" ref="BP_portrait_ec1"></div>
+                        <div class="BP_info_2_content ider">
+                            <ul v-if="inResize">
+                                    <li v-for="(i, idx) in list" :key="idx">
+                                        <label>{{i.name}}</label>
+                                        <img src="@/assets/img/portrait/chartbg@2x.png" alt="">
+                                        <svg width="106" height="106" version="1.1"  class="pie"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                            <defs>
+                                                <linearGradient id="linear" x1="0%" y1="0%" x2="100%" y2="0%"> 
+                                                    <stop offset="0%" stop-color="#92cbfe"/> 
+                                                    <stop offset="100%" stop-color="#2382f7"/> 
+                                                </linearGradient>
+                                            </defs>
+                                            <circle cx="53" cy="53" r="28" stroke="url(#linear)">
+                                                <animate attributeName="stroke-dashoffset" :to="getVal(i.value, 175)" dur="1s" fill="freeze"></animate>
+                                            </circle>
+                                        </svg>
+                                        <p>
+                                            <b>{{i.value * 100 | fixed}}</b>%
+                                        </p>
+                                    </li>
+                                </ul>
+                            <!-- <div class="BP_info_2_item" ref="BP_portrait_ec1"></div>
                             <div class="BP_info_2_item" ref="BP_portrait_ec2"></div>
                             <div class="BP_info_2_item" ref="BP_portrait_ec3"></div>
-                            <div class="BP_info_2_item" ref="BP_portrait_ec4"></div>
+                            <div class="BP_info_2_item" ref="BP_portrait_ec4"></div> -->
                         </div>
                     </div>
                     <div class="BP_info_3">
@@ -87,26 +128,62 @@
                 <div class="BP_right_top">
                     <!-- 游客来源 -->
                     <div class="BP_lai">
-                        <div class="BP_lai_title"></div>
-                        <div class="BP_lai_container" ref="tourist_lai"></div>
+                        <div class="BP_lai_title">
+                            <div class="BP_info_title_txt">游客来源分布</div>
+                        </div>
+                        <div class="BP_lai_container">
+                            <div class="BP_lai_container_1">
+                                <div class="BP_selectElement">
+                                    <el-select v-model="scenicNameSelectValue" placeholder="请选择" @change="selectScenicCome" 
+                                            popper-class="mySelectStyle">
+                                        <el-option
+                                            v-for="(item,index) in listScinic"
+                                            :key="index"
+                                            :label="item.scenicName"
+                                            :value="item.scenicName">
+                                        </el-option>
+                                    </el-select>
+                                </div>
+                                <div class="BP_lai_container_echart" ref="tourist_lai"></div>
+                            </div>
+                        </div>
                     </div>
                     <!-- 去向 -->
                     <div class="BP_qu">
-                        <div class="BP_qu_title"></div>
-                        <div class="BP_qu_container" ref="tourist_qu"></div>
+                        <div class="BP_qu_title">
+                            <div class="BP_info_title_txt">游客去向分布</div>
+                        </div>
+                        <div class="BP_qu_container">
+                            <div class="BP_lai_container_1">
+                                <div class="BP_selectElement">
+                                    <el-select v-model="scenicNameSelectValueLeave" placeholder="请选择" @change="selectScenicLeave" 
+                                            popper-class="mySelectStyle">
+                                        <el-option
+                                            v-for="(item,index) in listScinic"
+                                            :key="index"
+                                            :label="item.scenicName"
+                                            :value="item.scenicName">
+                                        </el-option>
+                                    </el-select>
+                                </div>
+                                <div class="BP_lai_container_echart" ref="tourist_qu"></div>
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="BP_right_bottom">
-                    <div class="BP_right_bottom_title"></div>
+                    <div class="BP_right_bottom_title">
+                        <div class="BP_info_title_txt">各区域参观轨迹</div>
+                    </div>
                     <div class="BP_right_bottom_echart">
                         <div class="BP_chooseData">
                             <div class="BP_chooseData_btn" @click="showCheck">
-                                <img src="../../assets/hotel/BP_right_bottom_tit.png" alt="">&nbsp;&nbsp;比较
+                                <img src="../../assets/hotel/chooseIcon.png" alt="">&nbsp;&nbsp;比较
                             </div>
                             <div class="BP_choose_list">
                                 <div class="BP_choose_list_bg">
                                     <el-tag
-                                        color="#082343"
+                                        color="#0A5EA3"
                                         :hit="false"
                                         v-for="tag in checkedScinic"
                                         :key="tag"
@@ -120,7 +197,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="BP_show_check" v-show="scenicCheck">
+                        <div class="BP_show_check" v-show="scenicCheck" @mouseleave="scenicLeave">
                             <el-checkbox-group v-model="checkedScinic" @change="checkScenicName" text-color="#fff">
                                 <el-checkbox v-for="(item,index) in listScinic" :label="item.scenicName" :checked="item.checked" :key="index">{{item.scenicName}}</el-checkbox>
                             </el-checkbox-group>
@@ -139,13 +216,52 @@ import headtop from '@/components/header/headtop';
 import aa from '@/assets/xf_bj.json'
 import qs from 'qs'
 import moment from "moment"
+
+const genderR = 45
+function angle (an) {
+    let r = 51
+    let angle = Math.PI / 180 * an;
+    let y = genderR + 5 +r*Math.sin(angle)    //线的角度
+    let x = genderR + 5 +r*Math.cos(angle)
+
+    return [x, y]
+}
 export default {
     components: {
         headtop
     },
+    computed: {
+        genderWidth () {
+            return this.genderR + 5
+        },
+        endPoint () {
+            return angle(360 * (this.female / 100))
+        }
+    },
+    filters:{
+        fixed(value){
+            return value.toFixed(2)
+        }
+    },
     data(){
         return{
             pageTitle: '游客画像分析',
+            inResize: true,
+            list: [
+                {
+                    value: 0.4,
+                    name: '已婚'
+                },
+                {
+                    value: 0,
+                    name: '携子'
+                },
+                {
+                    value: 0,
+                    name: '旅游达人'
+                }
+            ],
+            genderR: 40,
             male: 0,
             female: 0,
             scenicCheck: false,
@@ -164,12 +280,40 @@ export default {
             playDayData: [],
             ageDistriName: [],
             ageDistriData: [],
-            checkedScinic: [],   //景区复选
+            checkedScinic: ['普陀山风景名胜区'],   //景区复选
             listScinic: [],   //景区复选
             scenicNameSelectValue: '',
+            scenicNameSelectValueLeave: '',
+            pickerOptions1: {
+                disabledDate: (time) => {
+                    return  time.getTime() > new Date(new Date().getTime()) || time.getTime() < new Date('2019-10-01').getTime();
+                }
+            }
         }
     },
     methods: {
+        scenicLeave(){
+            this.scenicCheck = false
+        },
+        getVal (val, max) {
+            return max * (1 - val)
+        },
+        choseMonth(data){
+            this.mounthValue = data
+            this.touristCome()
+            this.touristLeave()
+            // this.gender()
+            this.age()
+            this.getIdentity()
+            // this.reTravel()
+            this.getAgePlay()
+            this.getGuiji()
+            this.inResize = false;
+            var that = this
+            setTimeout(() => {
+                that.inResize = true
+            }, 100);
+        },
         // 游客来源
         async touristCome(){
             this.proInEc = this.$echarts.init(this.$refs.tourist_lai)
@@ -178,7 +322,7 @@ export default {
             var res = await this.$http.post(
                 `/analysis/findTouristSourceTarget`,
                 qs.stringify({
-                    queryTime: '2020-01',
+                    queryTime: this.mounthValue,
                     // queryTime: this.mounthValue,
                     scenicName: this.scenicNameSelectValue,
                     type: '来源'
@@ -190,7 +334,7 @@ export default {
             var dataAxis = [];
             var data1 = [];
             sortData.forEach((item)=>{
-                dataAxis.push(item.name)
+                dataAxis.push(item.name.replace('市', ''))
                 data1.push(item.value)
             })
             if(code == 10000){
@@ -239,7 +383,7 @@ export default {
                         show: false,//网格线
                     },
                     interval: 0,
-                    z: 10
+                    // z: 10
                 },
                 grid: [
                     {
@@ -324,9 +468,9 @@ export default {
             var res = await this.$http.post(
                 `/analysis/findTouristSourceTarget`,
                 qs.stringify({
-                    queryTime: '2020-01',
+                    queryTime: this.mounthValue,
                     // queryTime: this.mounthValue,
-                    scenicName: this.scenicNameSelectValue,
+                    scenicName: this.scenicNameSelectValueLeave,
                     type: '去向'
                 })
             )
@@ -335,7 +479,7 @@ export default {
             var dataAxis = [];
             var data1 = [];
             sortData.forEach((item)=>{
-                dataAxis.push(item.name)
+                dataAxis.push(item.name.replace('市', ''))
                 data1.push(item.value)
             })
             if(code == 10000){
@@ -461,83 +605,85 @@ export default {
             this.touristLeaveEc.setOption(option);
             window.addEventListener('resize', this.resizeHandler)
         },
-        async gender(){
-            this.genderEc = this.$echarts.init(this.$refs.BP_gender)
-            var res = await this.$http.post(
-                `/tourist/findPortraitAttribute`,
-                qs.stringify({
-                    queryTime: this.mounthValue,
-                    valueType: 'gender'
-                })
-            )
-            let {data, code} = res.data
-            for(var key in data){
-                if(key == 'female'){this.female = Number(data[key])*100}
-                if(key == 'male'){this.male = Number(data[key])*100}
-            }
-            var option = {
-                tooltip: {
-                    show: false,
-                    trigger: 'item',
-                    formatter: '{a} <br/>{b}: {c} ({d}%)'
-                },
-                series: [
-                    {
-                        name: '访问来源',
-                        type: 'pie',
-                        center: ['50%', '50%'],
-                        radius: ['60%', '75%'],
-                        avoidLabelOverlap: false,
-                        hoverAnimation: false, //鼠标移入变大
-                        label:{
-                            show: false
-                        },
-                        labelLine: {
-                            normal: {
-                                show: false
-                            }
-                        },
-                        data: [
-                            {value: this.female, name: '女', itemStyle: {normal: {color: '#f087d1'}}},
-                            {value: this.male, name: '男', itemStyle: {normal: {color: '#10b7ff'}}}
-                        ],
-                    }
-                ]
-            };
-            this.genderEc.setOption(option)
-            let myChart =this.genderEc;//解决echarts中this指向问题
-            myChart.dispatchAction({
-                type: 'highlight',
-                name: '女'
-            });
-            window.addEventListener('resize', this.resizeHandler)
-        },
         async age(){
             this.ageEc = this.$echarts.init(this.$refs.BP_age)
             var res = await this.$http.post(
-                `/tourist/findPortraitAttribute`,
+                `/tourist/findPortraitAttributeByJiguang`,
                 qs.stringify({
-                    queryTime: this.mounthValue,
-                    valueType: 'age'
+                    queryTime: this.mounthValue
                 })
             )
             let {data, code} = res.data
+            if(data.length == 0){
+                this.female = 0
+                this.male = 0
+            }
             let ageInfo = []
             let ageName = []
             let ageData = []
-            for(var key in data){
-                if(key == 'age20to25'){ageInfo.push({name: '20-25岁', id: '1', value: data[key]})}
-                if(key == 'age25to30'){ageInfo.push({name: '25-30岁', id: '2', value: data[key]})}
-                if(key == 'age30to35'){ageInfo.push({name: '30-35岁', id: '3', value: data[key]})}
-                if(key == 'age35to40'){ageInfo.push({name: '35-40岁', id: '4', value: data[key]})}
-                if(key == 'age40'){ageInfo.push({name: '40岁以上', id: '5', value: data[key]})}
-            }
-            var sortData = ageInfo.sort(compare("id",true))
-            sortData.forEach((item)=>{
-                ageName.push(item.name)
-                ageData.push({name: item.name, value: Math.round(item.value * 10000) / 100})
-            })
+            let colorValue= []
 
+            let ageRandom = []
+            let ageRandomName = []
+            let ageRandomData = []
+            var that = this
+            data.forEach(item=>{
+                if(item.attribute == '16-25岁' || item.attribute == '26-35岁' || item.attribute == '36-45岁' || item.attribute == '大于46岁'){
+                    ageInfo.push({name: item.attribute, value: item.percent})
+                } else if(item.attribute == '婴幼儿' || item.attribute == '孕育期' || item.attribute == '青少年'){
+                    ageRandom.push({name: item.attribute, value: item.percent})
+                } else if(item.attribute == '女'){
+                    this.female = Number(item.percent/100)
+                }else if(item.attribute == '男'){
+                    this.male = Number(item.percent/100)
+                } else if(item.attribute == '已婚'){
+                    var married = Number(item.percent/100).toFixed(2)
+                    that.list[0].value = married
+                }
+            })
+            let total = 0
+            let totalColor = 0
+            let ageTotal = 0
+            // 年龄分布是否100%
+            ageInfo.forEach((item)=>{
+                total+= Number(Number(item.value).toFixed(2))
+                ageName.push(item.name)
+                ageData.push({name: item.name, value: Number(item.value).toFixed(2)})
+                colorValue.push(Number(item.value)/100)
+            })
+            if(total < 100){
+                ageData[ageData.length-1].value = (Number(ageData[ageData.length-1].value) + (100 - total)).toFixed(2)
+            }
+            colorValue.forEach(item=>{
+                totalColor+= Number(item)
+            })
+            if(totalColor < 1){
+                colorValue[colorValue.length - 1] = colorValue[colorValue.length - 1] + totalColor
+            }
+
+            // 年龄阶段分布是否100%
+            this.ageDistriName = []
+            this.ageDistriData = []
+            ageRandom.sort(compare('value', false)).forEach(item=>{
+                ageTotal += Number(Number(item.value).toFixed(2))
+                this.ageDistriName.push(item.name)
+                this.ageDistriData.push(Number(item.value).toFixed(2))
+            })
+            if(ageTotal < 100){
+                this.ageDistriData[this.ageDistriData.length-1] = (Number(this.ageDistriData[this.ageDistriData.length-1]) + (100 - ageTotal)).toFixed(2)
+            }
+
+            var colors = ['#02d7cb','#f5c70f','#fa9837','#ae52ff','#4fdb5b']
+            function setColors (data) {
+                let result = []
+                data.reduce((old, d, idx) => {
+                    let now = old + parseFloat(d)
+                    result.push([now, colors[idx]])
+                    return now
+                }, 0)
+                result.push([1, 'rgba(255,255,255,0)'])
+                return result
+            }
             var option = {
                 title: {
                     show: ageData.length == 0,
@@ -552,20 +698,20 @@ export default {
                 },
                 tooltip: {
                     trigger: 'item',
-                    formatter: '{a} <br/>{b}: {c} ({d}%)'
+                    formatter: '{b}: {c}%'
                 },
                 legend: {
                     orient: 'vertical',
-                    left: '60%',
-                    top: '8%',
+                    left: '57%',
+                    top: '15%',
                     icon: "circle",
-                    itemWidth: 8,  // 设置宽度
-                    itemHeight: 8, // 设置高度
-                    itemGap: 10,
+                    itemWidth: 7,  // 设置宽度
+                    itemHeight: 7, // 设置高度
+                    itemGap: 6,
                     textStyle: {
                         color: '#B2D2E3'
                     },
-                    data: ageName,
+                    data: ageData,
                     formatter: function(params) {
                         var legendIndex = 0;
                         ageData.forEach(function (v, i) {
@@ -576,55 +722,64 @@ export default {
                         return params + ":" + ageData[legendIndex].value +'%';
                     }
                 },
-                color: ['#02d7cb','#f5c70f','#fa9837','#ae52ff','#4fdb5b',],
+                
                 series: [
                     {
-                        name: '访问来源',
-                        type: 'pie',
-                        center: ['33%', '50%'],
-                        radius: ['50%', '65%'],
-                        avoidLabelOverlap: false,
-                        hoverAnimation: false, //鼠标移入变大
-                        label: {
-                            normal: {
-                                show: false,
-                                position: 'center'
-                            },
-                            emphasis: {
-                                show: true,
-                                textStyle: {
-                                    fontSize: '30',
-                                    fontWeight: 'bold'
-                                }
+                        name: '统计',
+                        type: 'gauge',
+                        splitNumber: 10, //刻度数量
+                        radius: '55%', //图表尺寸
+                        center: ['35%', '50%'],
+                        startAngle: 90,
+                        endAngle: -270,
+                        axisLine: {
+                            show: false,
+                            lineStyle: {
+                                width: 2,
+                                shadowBlur: 0,
+                                color: setColors(colorValue)
                             }
                         },
+                        splitLine: {
+                            show: false
+                        },
+                        axisTick: {
+                            show: true,
+                            lineStyle: {
+                                color: 'auto',
+                                width: 1
+                            },
+                            length: 8,
+                            splitNumber: 6
+                        },
+                        axisLabel: {
+                            show: false
+                        },
+                    }, {
+                        name:'访问来源',
+                        type:'pie',
+                        radius: ['62%', '64%'],
+                        center: ['35%', '50%'],
+                        color: colors,
                         labelLine: {
                             normal: {
                                 show: false
                             }
                         },
-                        data: ageData,
-                    },
-                     {
-                        name: '外边框',
-                        type: 'pie',
-                        hoverAnimation: false, //鼠标移入变大
-                        center: ['33%', '50%'],
-                        radius: ['72%', '75%'],
                         label: {
                             normal: {
-                                show: false,
+                                show: false
                             }
                         },
-                        data: ageData,
-                    },
+                        data: ageData
+                    }
                 ]
             };
             this.ageEc.setOption(option)
+            this.ageDistribution()
             window.addEventListener('resize', this.resizeHandler)
         },
         async getIdentity(){
-            // console.log('ooo')
             var res = await this.$http.post(
                 `/tourist/findPortraitIdentity`,
                 qs.stringify({
@@ -636,177 +791,86 @@ export default {
             let married = 0
             let withChild = 0
             let tourismDr = 0
+            var that = this
             for(var key in data){
-                if(key == 'married'){married = Number(Number(data[key])*100).toFixed(2)}
-                if(key == 'withChild'){withChild = Number(Number(data[key])*100).toFixed(2)}
-                if(key == 'tourismDr'){tourismDr = Number(Number(data[key])*100).toFixed(2)}
-            }
-            this.marriage(married)
-            this.child(withChild)
-            this.travelPerson(tourismDr)
-        },
-        marriage(data){
-            var marriageEchat = this.$refs.BP_portrait_ec1
-            this.portraitBottom(data,  marriageEchat, '已婚')
-        },
-        child(data){
-            var marriageEchat = this.$refs.BP_portrait_ec2
-            this.portraitBottom(data,  marriageEchat, '携子')
-        },
-        travelPerson(data){
-            var marriageEchat = this.$refs.BP_portrait_ec3
-            this.portraitBottom(data, marriageEchat, '旅游达人')
-        },
-        async reTravel(){
-            var res = await this.$http.post(
-                `/tourist/findPortraitRevisit`,
-                qs.stringify({
-                    queryTime: this.mounthValue
-                })
-            )
-            let {data, code} = res.data
-            var reData = Number(Number(data.revisitRatio)*100).toFixed(2)
-            var marriageEchat = this.$refs.BP_portrait_ec4
-            this.portraitBottom(reData, marriageEchat,'重游率')
-        },
-        portraitBottom(passData, refEchart, name){
-            this.portraitEc = this.$echarts.init(refEchart)
-            var giftImageUrl = aa.aa;
-            var option = {
-                title:{
-                    show:true,//平常时设置为false，隐藏没有数据的文字提示
-                    textStyle:{
-                        color:'#bcbcbc',
-                        fontSize: 14
-                    },
-                    text: name,
-                    left:'center',
-                    top:'85%'
-                },
-                graphic: {
+                // if(key == 'married'){
+                //     married = Number(data[key]).toFixed(2)
+                //     that.list[0].value = married
+                //     //  = {name: '已婚', value: married}
+                // }
                     
-                    elements: [{
-                        type: 'image',
-                        style: {
-                            image: giftImageUrl,
-                            width: 95,
-                            height: 95
-                        },
-                        left: 'center',
-                        top: 'center',
-                    }]
-                },
-                series: [
-                    {
-                        type: 'pie',
-                        radius: ['35%', '44%'],
-                        color:'#62b62f',
-                        itemStyle: {
-                            normal:{
-                                color: new this.$echarts.graphic.LinearGradient(
-                                    0, 0, 0, 1,
-                                    [
-                                        {offset: 0, color: '#93ccff'},
-                                        {offset: 1, color: '#2181f7'}
-
-                                    ]
-                                )
-                            }
-                        },
-                        hoverAnimation:false,
-                        data: [
-                            {
-                                value: passData,
-                                name: '女消费',
-                                labelLine: {    //引导线设置
-                                    normal: {
-                                        show: false,   //引导线显示
-                                    }
-                                },
-                                label: {
-                                    show: true,
-                                    normal: {
-                                        position: 'center',
-                                        formatter : passData+'%',
-                                        textStyle: {
-                                            fontSize: 14,
-                                            color:'#fff',
-                                        }
-                                    }
-                                }
-                            }, 
-                            {
-                                value: 100 - passData,
-                                name: '男消费',
-                                label: {
-                                    show: false,
-                                    normal: {
-                                    },
-                                    emphasis: {
-                                        show: false,
-                                    }
-                                },
-                                labelLine: {    //引导线设置
-                                    normal: {
-                                        show: false,   //引导线显示
-                                    }
-                                },
-                                itemStyle: {
-                                    normal: {
-                                        color: 'rgba(0,0,0,.1)'
-                                    },
-                                    emphasis: {
-                                        show: false,
-                                    }
-                                },
-                            }
-                        ]
-                    }
-                ]
-            };
-            this.portraitEc.setOption(option)
-            window.addEventListener('resize', this.resizeHandler)
+                if(key == 'withChild'){
+                    withChild = Number(data[key]).toFixed(2)
+                    that.list[1].value =  withChild
+                }
+                if(key == 'tourismDr'){
+                    tourismDr = Number(data[key]).toFixed(2)
+                    that.list[2].value = tourismDr
+                }
+            }
         },
+        // 重游率
+        // async reTravel(){
+        //     var res = await this.$http.post(
+        //         `/tourist/findPortraitRevisit`,
+        //         qs.stringify({
+        //             queryTime: this.mounthValue
+        //         })
+        //     )
+        //     let {data, code} = res.data
+        //     var reData = Number(Number(data.revisitRatio)).toFixed(2)
+        //     this.list[3].value = reData
+        //     var marriageEchat = this.$refs.BP_portrait_ec4
+        // },
         async getAgePlay(){
             var res = await this.$http.post(
                 `/tourist/findTouristChildPeriodAndStayTime`,
                 qs.stringify({
-                    // queryTime: this.mounthValue
-                    queryTime: '2020-01'
+                    // queryTime: '2020-01'
+                    queryTime: this.mounthValue
                 })
             )
             let {data, code} = res.data
             this.playDayName = []
             this.playDayData = []
-            this.ageDistriName = []
-            this.ageDistriData = []
             var data11 = []
+            var dataDay = []
+            
             for(var key in data){
                 if(key == '1天' || key == '2天' || key == '3天' || key == '4天'){
-                    this.playDayName.push(key); 
-                    this.playDayData.push({name: key, value: Math.round(data[key]*100) / 100})
+                    dataDay.push({name: key.replace('天', ''), value: data[key]})
                 }
-                if(key == '婴幼儿' || key == '孕育期' || key == '青少年'){
-                    data11.push({name: key, value: data[key]}) 
-                }
-                
             }
-            console.log()
-            var sortDate = data11.sort(compare('value', false))
-            sortDate.forEach((item)=>{
-                this.ageDistriName.push(item.name)
-                this.ageDistriData.push(Number(item.value))
-            })
-            this.ageDistribution()
+            if(dataDay.length != 0){
+                let dayTotal = 0
+                var sortDay = dataDay.sort(compare('name', true))
+                sortDay.forEach(item=>{
+                    this.playDayName.push(item.name+'天'); 
+                    this.playDayData.push({name: item.name+'天', value: Number(item.value).toFixed(2)})
+                })
+                this.playDayData.forEach(item=>{
+                    dayTotal += Number(item.value)
+                })
+                console.log(dayTotal)
+                if(dayTotal < 100){
+                    this.playDayData[this.playDayData.length - 1].value = (Number(this.playDayData[this.playDayData.length - 1].value) + Number(100 - dayTotal)).toFixed(2)
+                }else{
+                    this.playDayData[this.playDayData.length - 1].value = (Number(this.playDayData[this.playDayData.length - 1].value) - Number(dayTotal - 100)).toFixed(2)
+                }
+            }
             this.playTime()
         },
         ageDistribution(){
             this.ageDistributionEc = this.$echarts.init(this.$refs.BP_ageDistribution)
-            var yMax = Math.max(...this.ageDistriData);
+            var yMax = 100;
             var dataShadow = [];
             for (var i = 0; i < this.ageDistriData.length; i++) {
                 dataShadow.push(yMax);
             }
+            let total = 0
+            // ageData.forEach(item=>{
+            //     total += item
+            // })
             var option = {
                 tooltip : {
                     trigger: 'axis',
@@ -898,11 +962,8 @@ export default {
                 series : [
                     { // For shadow
                         type: 'bar',
-                        itemStyle: {
-                            color: 'rgba(0,39,71,1)'
-                        },
                         barGap: '-100%',
-                        barWidth: '30%',
+                        barWidth: '40%',
                         data: dataShadow,
                         animation: false,
                         hoverAnimation: false,
@@ -921,16 +982,17 @@ export default {
                         },
                         itemStyle: {
                             normal: {
-                                color: 'none',
+                                color: '#0E304D',
                                 borderColor: 'rgba(9,200,153,0.2)',
-                                borderWidth: 0.6
+                                borderWidth: 0.6,
+                                // color: '#f00'
                             }
                         }
                     },
                     {
                         name:'直接访问',
                         type:'bar',
-                        barWidth: '30%',
+                        barWidth: '40%',
                         label:{
                             normal:{
                                 textStyle: {
@@ -969,124 +1031,70 @@ export default {
             window.addEventListener('resize', this.resizeHandler)
         },
         playTime(){
+            let lengeData = this.playDayData
             this.playTimeEc = this.$echarts.init(this.$refs.BP_playTime)
-            var data = this.playDayData;
-            var dataStyle = { 
-                normal: {
-                    label: {show:true},
-                    labelLine: {
-                        normal: {
-                            length: 100,
-                            length2: 100,
-                            lineStyle: {
-                                color: '#fff'
-                            }
-                        }
-                    },
-                    shadowBlur: 40,
-                    shadowColor: 'rgba(40, 40, 40, 0.5)',
-                }
-            };
-            var placeHolderStyle = {
-                normal : {
-                    color: 'rgba(0,0,0,0)',
-                    label: {show:true},
-                    labelLine: {
-                        show: true,
-                        normal: {
-                            length: 100,
-                            length2: 100,
-                            lineStyle: {
-                                color: '#fff'
-                            }
-                        }
-                    },
-                },
-                emphasis : {
-                    color: 'rgba(0,0,0,0)'
-                }
-            };
-            var legendData=[];
-            function getData(data) {
-                var sortData=data.sort((a,b)=>{
-                    return b.value-a.value
-                });
-                var res = [];
-                for (let i = 0; i < sortData.length; i++) {
-                    legendData.push({name: sortData[i].name, value: sortData[i].value});
-                    res.push({
-                        type: 'pie',
-                        clockWise: false, //顺时加载
-                        hoverAnimation: false, //鼠标移入变大
-                        startAngle: i * 600, //起始角度
-                        center: ['40%', '35%'],
-                        // radius: [40 - i * 5, 60 - i * 5],
-                        radius: [55 - i * 15 + '%', 47 - i * 15 + '%'],
-                        itemStyle: dataStyle,
-                        data: [{
-                            value: sortData[i].value,
-                            name: sortData[i].name
-                        }, {
-                            value: 100 - sortData[i].value,
-                            name:'invisible',
-                            itemStyle: placeHolderStyle,
-                        }]
-                    });
-                }
-                return res;
-            }
             var option = {
                 color: ['#93CB44', '#14B2FF','#FF824A', '#4260FF'],
-                tooltip : {
-                    show: true,
-                    formatter: "{b} : {c} ({d}%)"
+                title:{
+                    show: this.playDayData.length == 0,//平常时设置为false，隐藏没有数据的文字提示
+                    textStyle:{
+                        color:'#bcbcbc'
+                    },
+                    text:'暂无数据',
+                    left:'center',
+                    top:'center'
                 },
-                grid: {
-                    left: '7%',
-                    right: '7%',
-                    bottom: '30%',
-                    top: '5%',
-                    containLabel: true
+                tooltip: {
+                    trigger: 'item',
+                    formatter: '{b} : {c} %'
                 },
                 legend: {
                     orient: 'vertical',
-                    itemGap:12,
-                    itemWidth: 12,  // 设置宽度
-                    itemHeight: 12, // 设置高度
-                    left: '63%',
-                    top: '5%',
+                    left: '60%',
+                    itemWidth: 10,
+                    itemHeight: 8,
+                    itemGap: 10,
                     textStyle:{
-                        color: '#B2D2E3',
-                        fontSize: 12
+                        color: '#fff',
+                        fontSize: 13
                     },
-                    data:legendData,
-                    formatter: function(params){
-                        var legendIndex = 0;
-                        data.forEach(function (v, i) {
-                            if (v.name == params) {
-                                legendIndex = i;
+                    data: this.playDayName,
+                    formatter: function(data){
+                        var currIndex = 0
+                        lengeData.forEach((item, i)=>{
+                            if(item.name == data){
+                                currIndex = i
                             }
-                        });
-                        return params + ":" + data[legendIndex].value +'%';
-                    }
+                        })
+                        return data +  lengeData[currIndex].value + '%'
+                    },
                 },
-                series : getData(data)
+                series: [
+                    {
+                        name: '访问来源',
+                        type: 'pie',
+                        radius: ['32%', '47%'],
+                        center: ['35%', '39%'],
+                        
+                        data: this.playDayData,
+                        emphasis: {
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowOffsetX: 0,
+                                shadowColor: 'rgba(0, 0, 0, 0.5)'
+                            }
+                        }
+                    }
+                ]
             };
             this.playTimeEc.setOption(option);
             window.addEventListener('resize', this.resizeHandler)
         },
         visitScenic(){
-            // var nodes = [{name:"普陀山风景名胜区"},
-            //  {name:"白沙岛景区"},
-            //  {name: "朱家尖景区"}, {name:"东极岛景区"}]
-            // var datas = [
-            //     {source: "普陀山风景名胜区", target: "白沙岛景区", value: 28599},
-            //     {source: "朱家尖景区", target: "东极岛景区", value: 86523}
-            // ]
             this.visitScenicEc = this.$echarts.init(this.$refs.visitScenicEchart)
             var option = {
                 title:{
-                    show: this.nodesData.length == 0,//平常时设置为false，隐藏没有数据的文字提示
+                    show: this.newNodes.length == 0,//平常时设置为false，隐藏没有数据的文字提示
                     textStyle:{
                         color:'#bcbcbc'
                     },
@@ -1122,37 +1130,6 @@ export default {
                     }
                 ]
             };
-            // var city = 
-            // {
-            //     '研究人群':'#4260FF',
-            //     '南北湖':'#BF7626',
-            //     '绮园':'#BF7626',
-            //     '核电小镇':'#BF7626'
-            // }
-            // var population = nodesData
-            // [
-            //     {source: "研究人群",target: "南北湖", value: 4567},
-            //     {source: "研究人群", target: "绮园", value: 1234},
-            //     {source: "核电小镇", target: "香港", value: 3234}];
-            // var data=[];
-            // var citylist=[];
-            // for(var key in city){
-            //     citylist.push(
-            //         {name: key,itemStyle: {color:city[key]}}
-            //     )
-            // }
-            // for(var i=0;i<population.length;i++){
-            //     var color = '#06CBE9'
-            //     data.push(
-            //         {source: population[i].source,
-            //         target: population[i].target,
-            //         value: population[i].value,
-            //             lineStyle: {
-            //             color:color
-            //             }
-            //         }
-            //     )
-            // }
           
             this.visitScenicEc.setOption(option);
             window.addEventListener('resize', this.resizeHandler)
@@ -1172,12 +1149,16 @@ export default {
             })
             this.listScinic = data
             this.scenicNameSelectValue = data[0].scenicName
+            this.scenicNameSelectValueLeave = data[0].scenicName
             this.touristCome()  //根据景区名获取
             this.touristLeave()  //根据景区名获取
+            // this.checkedScinic = data[0].scenicName    //默认轨迹
         },
         // select景区事件
-        selectScenic(){
+        selectScenicCome(){
             this.touristCome()  //根据景区名获取
+        },
+        selectScenicLeave(){
             this.touristLeave()  //根据景区名获取
         },
         // 删除tag
@@ -1188,7 +1169,7 @@ export default {
             this.getGuiji()
         },
         // 复选框
-        async checkScenicName(){
+        checkScenicName(){
             this.getGuiji()
         },
         // 轨迹
@@ -1197,27 +1178,30 @@ export default {
             var res = await this.$http.post(
                 `/analysis/findTouristVisitingTrace`,
                 qs.stringify({
-                    queryTime: this.mounthValue,
+                    queryTime: '2020-01',
+                    // queryTime: this.mounthValue,
+                    scenicName: this.checkedScinic.join(','),
                 })
             )
+
+
             let {data, code} = res.data
-            console.log(data)
+            console.log(res)
             let guijiLinkSou = []
             let nodes = []
             let nodesData = []
             var that = this
-            data.map(item =>{
-                that.checkedScinic.map(items => {
-                    if(item.linkSource == items){
-                        guijiLinkSou.push(item)
-                    }
-                })
-            })
-            guijiLinkSou.forEach((item)=>{
-                console.log(item.linkSource)
-                nodes.push({name:item.linkSource})
-                nodes.push({name:item.linkTarget})
-                nodesData.push({source: item.linkSource, target: item.linkTarget, value: item.linkValue})
+            // data.map(item =>{
+            //     that.checkedScinic.map(items => {
+            //         if(item.linkSource == items){
+            //             guijiLinkSou.push(item)
+            //         }
+            //     })
+            // })
+            data.forEach((item)=>{
+                nodes.push({name:item.source})
+                nodes.push({name:item.target})
+                nodesData.push({source: item.source, target: item.target, value: item.value})
             })
             var newNodes = [];
             var obj = {};
@@ -1229,6 +1213,8 @@ export default {
             }
             this.newNodes = newNodes
             this.nodesData = nodesData
+            console.log(this.newNodes)
+            console.log(this.nodesData)
             this.visitScenic()
         },
         resizeHandler(){
@@ -1248,12 +1234,12 @@ export default {
         this.getGuiji()
         // this.touristCome()
         // this.touristLeave()
-        this.gender()
+        // this.gender()
         this.age()
         // this.marriage()
         // this.child()
         // this.travelPerson()
-        this.reTravel()
+        // this.reTravel()
         // this.ageDistribution()
         this.getIdentity()
         this.visitScenic()
@@ -1283,24 +1269,203 @@ function compare(property,desc) {
 }
 </script>
 
-<style>
-    .el-select-dropdown.mySelectStyle{
+<style Scoped>
+    
+    .basicPortrait .el-tag.el-tag--info{
+        color: #FEFEFE;
+    }
+    .basicPortrait .tag{
+        padding: 0 5px 0 2px;
+    }
+    .basicPortrait .el-tag, .el-tag.el-tag--info{
+        border: none;
+        color: #FEFEFE;
+        margin-left: 2px;
+    }
+    .basicPortrait .el-tag.el-tag--info.el-tag--light{
+        color: #fff;
+    }
+    .basicPortrait .el-icon-close:before{
+        color: #fff;
+    }
+    .total_date1_basic .el-icon-date:before{
+        background: url('../../assets/hotel/date_icon.png') no-repeat;
+        background-size: 100% 100%;
+        width: 21px;
+        height: 21px;
+        position: absolute;
+        top: 14px;
+        left: 0;
+        margin-right: 2px;
+    }
+    .total_date1_basic .el-icon-date:before{
+        content: '';
+    }
+    .el-picker-panel.down_date{
+        background-color: #072342;
+    }
+    .total_date1_basic .el-date-editor.el-input{
+        width: 130px;
+        cursor: pointer;
+    } 
+    .total_date1_basic .el-date-editor.el-input input{
+        background-color: transparent;
+        color: #ABCBFF;
+        cursor: pointer;
+        border: none;
+    }
+    .total_date1_basic .el-input__prefix{
+        left: 46px;
+    }
+    .el-picker-panel.down_date .el-date-picker__header-label{
+        color: #ABCBFF;
+    }
+    .el-picker-panel.down_date .el-picker-panel__icon-btn{
+        color: #ABCBFF;
+    }
+    
+    .el-picker-panel.down_date .el-month-table td .cell{
+        color: #ABCBFF;
+    }
+    .el-select-dropdown.mySelectStyle, .el-select-dropdown.mySelectStyle .el-select-dropdown__list{
         background-color: #082343;
     }
     .el-select-dropdown.mySelectStyle .el-select-dropdown__item{
         color: #9EBAD0;
+        background-color: #082343;
     }
     .el-select-dropdown.mySelectStyle .el-select-dropdown__item.hover{
         background-color: #082343;
         color: #eee;
     }
+    .el-select-dropdown.mySelectStyle{
+        border: 1px solid rgba(21, 129, 218, 1);
+    }
     .BP_selectElement .el-input__inner{
-        background-color: #082343;
+        /* background-color: #082343; */
+        background: url('../../assets/hotel/P_scenic_bj.png') no-repeat;
+        background-size: 100% 100%;
+        text-align: center;
+        border: none;
+        padding: 0 5px;
         color: #9EBAD0;
+    }
+    .el-select{
+        height: 30px;
     }
     .el-checkbox{
         /* background-color: #fff; */
         color: #fff;
+    }
+    
+    .ider{
+        width: 100%;
+    }
+    .ider ul{
+        /* position: absolute; */
+        display: flex;
+        width: 100%;
+        height: 100%;
+    }
+    .ider ul li{
+        float: left;
+        width: 25%;
+        height: 110px;
+        position: relative;
+        /* position: absolute;
+        left: 0;
+        top: 0; */
+        font-size: 12px;
+    }
+    .ider ul li label{
+        width: 25px;
+        height: 16px;
+        color: #fff;
+        display: block;
+        text-align: center;
+        position: absolute;
+        writing-mode: vertical-lr;
+        bottom: -20px;
+        left: 50%;
+        margin-left: -13px;
+        /* transform: translate(-50%); */
+    }
+    .ider ul li img{
+        display: block;
+        width: 110px;
+        /* width: auto; */
+        height: 110px;
+        margin: 0 auto;
+        /* position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%); */
+    }
+    .ider ul li .pie{
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+
+    }
+    .ider ul li:nth-child(1) img, .ider ul li:nth-child(3) img{
+        -webkit-animation: mapRotateColor 3.7s 1s linear infinite;
+        /* left: 117px;
+        top: 7px; */
+    }
+    .ider ul li:nth-child(2) img, .ider ul li:nth-child(4) img{
+        -webkit-animation: mapRotateColor1 3.7s 1s linear infinite;
+    }
+    .ider ul li p{
+        text-align: center;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        color: #0CE3DC;
+    }
+    .ider circle{
+        stroke-linecap: round;
+        fill: none;
+        stroke-width: 4;
+        stroke-dasharray: 175;
+        stroke-dashoffset: 175;
+        transform: rotatez(-90deg);
+        transform-origin: 53px;
+    }
+    @keyframes mapRotateColor {  
+        0%{
+            -webkit-transform:rotate(0deg);
+        }
+        100%{
+            -webkit-transform:rotate(-360deg);
+        }
+    }
+    @keyframes mapRotateColor1 {  
+        0%{
+            -webkit-transform:rotate(0deg);
+        }
+        100%{
+            -webkit-transform:rotate(360deg);
+        }
+    }
+    .total_date1_basic{
+        /* width: 20%; */
+        width: 188px;
+        height: 48px;
+        position: absolute;
+        cursor: pointer;
+        top: 0px;
+        right: 20px;
+        z-index: 999;
+    }
+    .total_date1_basic input{
+        width: 188px;
+        height: 48px;
+        text-align: center;
+        color: #ABCBFF;
+        background: url('../../assets/hotel/dateBj.png') no-repeat;
+        background-size: 100% 100%;
     }
 
     .BP_nav{
@@ -1327,11 +1492,11 @@ function compare(property,desc) {
         position: relative;
     }
     .BP_selectElement{
-        width: 170px;
-        height: 34px;
+        width: 160px;
+        height: 30px;
         position: absolute;
-        top: 43px;
-        right: 50px;
+        top: 5px;
+        right: 15px;
         z-index: 666;
     }
     .BP_title_txt{
@@ -1408,6 +1573,7 @@ function compare(property,desc) {
     .BP_info_1_title_txt{
         width: 100%;
         height: 22px;
+        line-height: 22px;
         text-align: center;
         position: absolute;
         top: 50%;
@@ -1419,6 +1585,10 @@ function compare(property,desc) {
     .BP_info_1_con{
         width: 100%;
         height: calc(100% - 58px);
+    }
+    .BP_info_1_con.gender{
+        width: 235px;
+        margin: 0 auto;
     }
     .BP_info_1_nan, .BP_info_1_nv{
         width: 60px;
@@ -1443,10 +1613,37 @@ function compare(property,desc) {
         color: #FD78B9;
     }
     .BP_info_1_echart{
-        width: calc(100% - 145px);
+        width: 100px;
+        /* width: calc(100% - 145px); */
         height: 100%;
         float: left;
+        position: relative;
     }
+    .BP_info_1_echart svg{
+        position: absolute;
+        top: 50%;
+        margin-top: -45px;
+    }
+    .ring{
+        fill: none;
+        stroke-width: 4;
+    }
+    .manchart {
+        stroke-dasharray: 251;
+        stroke-dashoffset: 0;
+        /* transform: rotatez(-90deg);
+        transform-origin: 52px; */
+    }
+    .womanchart {
+        stroke-dasharray: 198;
+        stroke-dashoffset: 198;
+        /* transform: rotatez(-90deg);
+        transform-origin: 57px; */
+    }
+    /* .endline{
+        transform: rotate(-90deg);
+        transform-origin:50px;
+    } */
     .BP_info_2{
         width: 100%;
         height: 25.7%;
@@ -1489,7 +1686,7 @@ function compare(property,desc) {
     }
     .BP_info_3_content.playTime{
         width: 80%;
-        height: 100%;
+        height: calc(100% - 38px);
         margin: 0 auto;
     }
     .BP_info_2_item{
@@ -1529,6 +1726,7 @@ function compare(property,desc) {
         height: 12.17%;
         background: url('../../assets/hotel/BP_lai.png') no-repeat;
         background-size: 100% 100%;
+        position: relative;
     }
     .BP_qu_title{
         background: url('../../assets/hotel/BP_qu.png') no-repeat;
@@ -1537,6 +1735,17 @@ function compare(property,desc) {
     .BP_lai_container, .BP_qu_container{
         width: 100%;
         height: 87.8%;
+    }
+    .BP_lai_container_1{
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+    .BP_lai_container_echart{
+        width: 100%;
+        height: 100%;
+        padding-top: 40px;
+        box-sizing: border-box;
     }
     .BP_right_bottom{
         width: 100%;
@@ -1550,6 +1759,7 @@ function compare(property,desc) {
         height: 12.17%;
         background: url('../../assets/hotel/BP_right_bottom_tit.png') no-repeat;
         background-size: 100% 100%;
+        position: relative;
     }
     .BP_right_bottom_echart{
         width: 100%;
@@ -1559,7 +1769,7 @@ function compare(property,desc) {
         position: relative;
     }
     .BP_show_check{
-        width: 180px;
+        width: 166px;
         height: 220px;
         border-radius: 5px;
         position: absolute;
@@ -1571,6 +1781,11 @@ function compare(property,desc) {
         padding-left: 7px;
         box-sizing: border-box;
         border: 1px solid #9EBAD0;
+        z-index: 666;
+    }
+    .BP_show_check .el-checkbox__label{
+        font-size: 12px;
+        color: #ABCBFF;
     }
     .BP_chooseData{
         width: 100%;
@@ -1608,7 +1823,6 @@ function compare(property,desc) {
     .BP_bottom_echarts{
         width: 100%;
         height: calc(100% - 67px);
-        padding-left: 160px;
         padding-bottom: 10px;
         box-sizing: border-box;
     }
@@ -1634,7 +1848,7 @@ function compare(property,desc) {
             height: 30px;
         }
         .BP_selectElement{
-            top: 20px;
+            top: 13px;
         }
         .BP_choose_list_bg{
             height: 29px;
@@ -1644,6 +1858,14 @@ function compare(property,desc) {
         }
         .BP_chooseData_btn{
             line-height: 28px;
+        }
+        /* .ider ul li img{
+            width: 80px;
+            height: 80px;
+            display: block;
+        } */
+        .ider ul li label{
+            bottom: -10px;
         }
     }
 </style>

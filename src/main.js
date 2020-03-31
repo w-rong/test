@@ -15,19 +15,61 @@ Vue.use(Element)
 import 'echarts/map/js/china.js'
 import 'echarts/map/js/province/zhejiang.js'
 import '@/common/font/font.css'
-
 import axios from 'axios'
-Vue.prototype.$http = axios
+import myaxios from '@/assets/js/myAxios.js'
+
+
+Vue.use(myaxios)
+// Vue.prototype.$http = axios
+// Vue.prototype.axios = axios
+// let a = localStorage.getItem("Authorization")
+// var stoken = xhr.getResponseHeader('Authorization');
+// console.log(stoken);
+// console.log(a);
+// axios.defaults.headers.common['Authorization'] = a
+
+// router.beforeEach(function (to, from, next) {
+    // var paths = to.path.substr(1, to.path.length)
+//     if (!localStorage.getItem("Authorization")) {
+//         if (to.path != '/') {
+//             next(`/?${paths}`)
+//         }
+//     } else {
+//         var a = localStorage.getItem("Authorization")
+//         axios.interceptors.request.use(function (config) {
+//             //       axios.defaults.headers.common['Authorization'] = a
+//             config.headers.Authorization = a
+//             // 在发送请求之前做些什么
+//             return config
+//         }, function (error) {
+//             // 对请求错误做些什么
+//             // console.log("err");
+//             // console.log(error);
+//             // return next(`/?${paths}`)
+//         });
+//         axios.interceptors.response.use(function (config) {
+//           axios.defaults.headers.common['Authorization'] = a
+//             return config
+//         }, function (error) {
+//             // 对请求错误做些什么
+//             // console.log("err");
+//             // console.log(error);
+//             // localStorage.clear();
+//             return next(`/?${paths}`)
+//         });
+//     }
+//     next()
+// })
 
 new Vue({
-  router,
-  store,
-  render: h => h(App),
+    router,
+    store,
+    render: h => h(App),
 }).$mount('#app')
 
-// new Vue({
-//   el: '#app',
-//   router,
-//   components: { App },
-//   template: '<App/>'
-// })
+// new Vue({
+//   el: '#app',
+//   router,
+//   components: { App },
+//   template: '<App/>'
+// })

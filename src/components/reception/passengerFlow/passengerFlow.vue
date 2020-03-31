@@ -10,6 +10,7 @@
                 <div class="Passeng_container_nav_con">
                     <div class="P_nav_con_item" v-for="(item, index) in itemList" :key="index"  :class="{ active:index == iconNowIndex}" @click="icontoggleTab(index)">
                         <div class="P_nav_con_item_txt">{{item}}</div>
+                        <div class="P_nav_con_rotate" :class="{ active:index == iconNowIndex}"></div>
                     </div>
                     <!-- <div class="Passeng_container_nav_con1" v-for="(item, index) in itemList" :key="index" @click="icontoggleTab(index)"> -->
                         <!-- <div style="height: 60%; width: 100%;display: flex;">
@@ -52,9 +53,9 @@ export default {
     },
     data(){
         return{
-            pageTitle: '景区客流量统计',
+            pageTitle: '客流量统计',
             iconNowIndex: 0,
-            itemList: ['客流量统计','省内客流量','省外客流量','城市客流量']
+            itemList: ['景区客流量','省内客流量','省外客流量','城市客流量']
         }
     },
     methods: {
@@ -66,6 +67,10 @@ export default {
 </script>
 
 <style>
+    .Passeng .el-input--prefix .el-input__inner{
+        color: #ABCBFF;
+        border: none;
+    }
     .el-picker-panel.down_date{
         background-color: #072342;
     }
@@ -137,18 +142,42 @@ export default {
         box-sizing: border-box;
     }
     .P_nav_con_item{
-        width: 100%; 
+        width: 198px; 
         height: 68px;
-        background: url('../../../assets/hotel/W_navDefault_bj.png') no-repeat;
-        background-size: auto 100%;
+        background: url('../../../assets/hotel/weater_icon_d.png') no-repeat;
+        background-size: 100% 100%;
         cursor: pointer;
         margin-bottom: 16px;
+        position: relative;
     }
     .P_nav_con_item.active{
         width: 198px;
         height: 68px;
-        background: url('../../../assets/hotel/W_navActive_bj.png') no-repeat;
-        background-size: auto 100%;
+        background: url('../../../assets/hotel/weater_icon_a.png') no-repeat;
+        background-size: 100% 100%;
+    }
+    .P_nav_con_rotate{
+        width: 68px;
+        height: 68px;
+        position: absolute;
+        top: 0;
+        left: 11.3px;
+        background: url('../../../assets/hotel/default_bg2.png') no-repeat;
+        background-size: 100% 100%;
+        z-index: 666;
+        -webkit-animation: mapRotateColor 3.7s 1s linear infinite;
+    }
+    .P_nav_con_rotate.active{
+        background: url('../../../assets/hotel/big2.png') no-repeat;
+        background-size: 100% 100%;
+    }
+    @keyframes mapRotateColor {  
+        0%{
+            -webkit-transform:rotate(0deg);
+        }
+        100%{
+            -webkit-transform:rotate(-360deg);
+        }
     }
     .P_nav_con_item_txt{
         line-height: 68px;
@@ -248,11 +277,17 @@ export default {
     }
     @media screen and (max-width: 1400px) {
         .Passeng_container_nav_con{
-            padding-top: 33px;
+            padding-top: 50px;
             box-sizing: border-box;
         }
         .P_nav_con_item.active, .P_nav_con_item{
+            width: 160px;
             height: 53px;
+        }
+        .P_nav_con_rotate{
+            width: 53px;
+            height: 53px;
+            left: 10.2px;
         }
         .P_nav_con_item_txt{
             margin-left: 64px;

@@ -31,7 +31,7 @@
   </div>
 </template>
 <script>
-import LeftRow from "./LeftRowMon";
+import LeftRow from "./LeftRow";
 import { mapGetters, mapActions } from "vuex";
 export default {
   data() {

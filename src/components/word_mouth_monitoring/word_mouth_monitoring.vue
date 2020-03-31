@@ -4,6 +4,23 @@
       <headtop :title="pageTitle" />
       <!-- <div class="word_mouth_title_font">口碑监测系统</div> -->
     </div>
+    <div class="word_mouth_date_all">
+      <div class="word_mouth_date">
+        <el-date-picker
+          @change="changeTime()"
+          popper-class="down_date"
+          :clearable="false"
+          clear-icon="clearIcon"
+          v-model="timeMonth"
+          value-format="yyyy-MM"
+          type="month"
+          size="small"
+          placeholder="选择日期"
+          :picker-options="pickerOptions1"
+        ></el-date-picker>
+      </div>
+      <button type="button" style="display:inline-block" @click="changeTime2()">重置</button>
+    </div>
     <div class="word_mouth_content">
       <!-- 网评综合分析 -->
       <div class="word_mouth_left_contnet">
@@ -17,23 +34,25 @@
             <div class="synthesize_all_person">
               <div class="synthesize_all_person_title">累计评论数</div>
               <div class="synthesize_all_person_account">
-                <div
-                  class="synthesize_all_person_account_font"
-                >{{scenicAccount+hotelAccount+cateringAccount}}</div>
+                <div class="synthesize_all_person_account_font">{{allCommentAccount}}</div>
               </div>
             </div>
             <div class="synthesize_add_comment">
-              <div class="synthesize_add_comment_title">新增评论数</div>
-              <div class="synthesize_add_comment_account">
-                <img src="../../assets/image/mouth_add_comment_icon.png" alt />
-                <span>{{addComment}}</span>
+              <div class="synthesize_add_comment_title">
+                新增评论数
+                <div class="synthesize_add_comment_account">
+                  <img src="../../assets/image/mouth_add_comment_icon.png" alt />
+                  <span>{{addComment}}</span>
+                </div>
               </div>
             </div>
             <div class="synthesize_add_comment">
-              <div class="synthesize_add_comment_title">累计好评率</div>
-              <div class="synthesize_add_comment_account">
-                <img src="../../assets/image/mouth_good_comment_icon.png" alt />
-                <span>{{allGoodComment}}</span>
+              <div class="synthesize_add_comment_title">
+                累计好评率
+                <div class="synthesize_add_comment_account">
+                  <img src="../../assets/image/mouth_good_comment_icon.png" alt />
+                  <span style="margin-left: 4%;">{{allGoodComment}}%</span>
+                </div>
               </div>
             </div>
             <div class="mouth_add_up">
@@ -56,8 +75,8 @@
             </div>
             <div class="synthesize_distribution_comments_content">
               <div class="synthesize_distribution_comments_table_content">
-                <img class="mouth_circle_out" src="../../assets/image/mouth_circle_out.png" alt />
-                <img class="mouth_circle_in" src="../../assets/image/mouth_circle_in.png" alt />
+                <!-- <img class="mouth_circle_out" src="../../assets/image/mouth_circle_out.png" alt />
+                <img class="mouth_circle_in" src="../../assets/image/mouth_circle_in.png" alt />-->
                 <div
                   class="synthesize_distribution_comments_table"
                   ref="synthesize_distribution_comments_table"
@@ -73,7 +92,18 @@
             </div>
             <div class="synthesize_latest_comments_list">
               <div v-for="(item, index) in newComment" :key="index">
-                <span class="mouth_comment_result">{{item.commentType | isComment}}</span>
+                <span
+                  class="mouth_comment_result"
+                  v-if="item.commentType == 1"
+                >{{item.commentType | isComment}}</span>
+                <span
+                  class="mouth_comment_result1"
+                  v-if="item.commentType == 2"
+                >{{item.commentType | isComment}}</span>
+                <span
+                  class="mouth_comment_result2"
+                  v-if="item.commentType == 0"
+                >{{item.commentType | isComment}}</span>
                 <span class="mouth_comment_address">{{item.placeType | isHotel}}</span>
                 <span class="mouth_comment_content">{{item.commentContent}}</span>
               </div>
@@ -99,9 +129,9 @@
                   </div>
                 </div>
                 <div class="word_mouth_scenic_comment_classify">
-                  <img src="../../assets/image/mouth_scenic_comment_classify1.png" alt />
-                  <img src="../../assets/image/mouth_scenic_comment_classify2.png" alt />
-                  <img src="../../assets/image/mouth_scenic_comment_classify3.png" alt />
+                  <div>好评&ensp;{{scenicAccountList.highRatio*100 | fixedOne}}%</div>
+                  <div>中评&ensp;{{scenicAccountList.medRatio*100 | fixedOne}}%</div>
+                  <div>差评&ensp;{{scenicAccountList.lowRatio*100 | fixedOne}}%</div>
                 </div>
               </div>
             </div>
@@ -126,7 +156,11 @@
                     >{{item}}</option>
                   </select>
                   <div class="analysis_synthesis_title">综合分析</div>
-                  <div class="analysis_synthesis_score">{{scenicRate}}分/{{allscenicRate}}分</div>
+                  <div
+                    v-if="scenicPlaceName == ''"
+                    class="analysis_synthesis_score"
+                  >0分/{{allscenicRate}}分</div>
+                  <div v-else class="analysis_synthesis_score">{{scenicRate}}分/{{allscenicRate}}分</div>
                   <div class="word_mouth_scenic_comment_dimensionality_point">
                     <div class="word_mouth_scenic_comment_dimensionality_point_all_scenic">
                       <span></span>全部景区
@@ -190,9 +224,9 @@
                   </div>
                 </div>
                 <div class="word_mouth_scenic_comment_classify">
-                  <img src="../../assets/image/mouth_scenic_comment_classify1.png" alt />
-                  <img src="../../assets/image/mouth_scenic_comment_classify2.png" alt />
-                  <img src="../../assets/image/mouth_scenic_comment_classify3.png" alt />
+                  <div>好评&ensp;{{hotelAccountList.highRatio*100 | fixedOne}}%</div>
+                  <div>中评&ensp;{{hotelAccountList.medRatio*100| fixedOne}}%</div>
+                  <div>差评&ensp;{{hotelAccountList.lowRatio*100 | fixedOne}}%</div>
                 </div>
               </div>
             </div>
@@ -217,7 +251,11 @@
                     >{{item}}</option>
                   </select>
                   <div class="analysis_synthesis_title">综合分析</div>
-                  <div class="analysis_synthesis_score">{{hotelRate}}分/{{allhotelRate}}分</div>
+                  <div
+                    class="analysis_synthesis_score"
+                    v-if="hotelPlaceName == ''"
+                  >0分/{{allhotelRate}}分</div>
+                  <div class="analysis_synthesis_score" v-else>{{hotelRate}}分/{{allhotelRate}}分</div>
                   <div class="word_mouth_scenic_comment_dimensionality_point">
                     <div class="word_mouth_scenic_comment_dimensionality_point_all_scenic">
                       <span></span>全部酒店
@@ -281,9 +319,9 @@
                   </div>
                 </div>
                 <div class="word_mouth_scenic_comment_classify">
-                  <img src="../../assets/image/mouth_scenic_comment_classify1.png" alt />
-                  <img src="../../assets/image/mouth_scenic_comment_classify2.png" alt />
-                  <img src="../../assets/image/mouth_scenic_comment_classify3.png" alt />
+                  <div>好评&ensp;{{cateringAccountList.highRatio*100 | fixedOne}}%</div>
+                  <div>中评&ensp;{{cateringAccountList.medRatio*100 | fixedOne}}%</div>
+                  <div>差评&ensp;{{cateringAccountList.lowRatio*100 | fixedOne}}%</div>
                 </div>
               </div>
             </div>
@@ -301,14 +339,18 @@
                 <div class="word_mouth_scenic_comment_dimensionality_choose">
                   <select v-model="caterPlaceName" @change="choosePlaceCater">
                     <option value>全部</option>
-                     <option
-                      v-for="(item, index) in caterPlaceName"
+                    <option
+                      v-for="(item, index) in caterCommentName"
                       :key="index"
                       :value="item"
                     >{{item}}</option>
                   </select>
                   <div class="analysis_synthesis_title">综合分析</div>
-                  <div class="analysis_synthesis_score">{{caterRate}}分/{{allcaterRate}}分</div>
+                  <div
+                    class="analysis_synthesis_score"
+                    v-if="caterPlaceName == ''"
+                  >0分/{{allcaterRate}}分</div>
+                  <div class="analysis_synthesis_score" v-else>{{caterRate}}分/{{allcaterRate}}分</div>
                   <div class="word_mouth_scenic_comment_dimensionality_point">
                     <div class="word_mouth_scenic_comment_dimensionality_point_all_scenic">
                       <span></span>全部餐饮
@@ -405,8 +447,18 @@
           <div class="dig_comment_source dig_comment_source_three">
             <div class="dig_comment_source_word">评论时间</div>
             <div class="dig_comment_source_time">
-              <el-date-picker v-model="value1" type="date" placeholder="选择日期" align="right"></el-date-picker>&ensp;-&ensp;
-              <el-date-picker v-model="value1" type="date" placeholder="选择日期" align="right"></el-date-picker>
+              <el-date-picker
+                v-model="commentStart"
+                value-format="yyyy-MM-dd"
+                type="date"
+                placeholder="选择日期"
+              ></el-date-picker>&ensp;-&ensp;
+              <el-date-picker
+                v-model="commentEnd"
+                value-format="yyyy-MM-dd"
+                type="date"
+                placeholder="选择日期"
+              ></el-date-picker>
             </div>
           </div>
           <div class="dig_comment_source dig_comment_source_four">
@@ -460,7 +512,7 @@
               <td>{{item.commentType | isComment}}</td>
               <td>{{item.commnetScore}}</td>
               <td>{{item.placeName}}</td>
-              <td>{{item.commentContent}}</td>
+              <td>{{item.commentContent | omit}}</td>
               <td>{{item.commentTime | date}}</td>
               <td>{{item.commentUser}}</td>
             </tr>
@@ -498,10 +550,25 @@ export default {
   data() {
     return {
       pageTitle: "口碑监测系统",
+      beginValue: new Date(),
+      endValue: new Date(),
       startTime: "2019-10-01",
       endTime: "2019-12-30",
-      timeMonth: "2020-01",
+      timeMonth: "",
+      lastYear: "",
+      commentStart: "",
+      commentEnd: "",
+      pickerOptions1: {
+        disabledDate: time => {
+          return (
+            time.getTime() > new Date(new Date().getTime()) ||
+            time.getTime() < new Date("2019-10-01").getTime()
+          );
+        }
+      },
       baseUrl: "http://47.96.94.56:8083",
+      // 总评论量
+      allCommentAccount: "",
       // 新增评论量
       addComment: "",
       // 累计好评量
@@ -516,9 +583,12 @@ export default {
       // 最新评价
       newComment: [],
       hotelAccount: "",
+      hotelAccountList: "",
       hotelLists: "",
       scenicAccount: "",
+      scenicAccountList: "",
       cateringAccount: "",
+      cateringAccountList: "",
       commentTrendTable: "",
       commentTrendList: "",
       commentAddressTable: "",
@@ -616,20 +686,23 @@ export default {
       caterD: [],
       caterlittleLists: [],
       // 景区评论量
-      scenicCommentCount: "",
+      scenicCommentCount: [],
       scenicCommentName: [],
-      allscenicRate:0,
-      scenicRate:0,
+      allscenicRate: 0,
+      scenicRate: 0,
       // 酒店评论量
-      hotelCommentCount: "",
+      hotelCommentCount: [],
       hotelCommentName: [],
-      allhotelRate:0,
-      hotelRate:0,
+      allhotelRate: 0,
+      hotelRate: 0,
       // 餐饮评论量
-      caterCommentCount: "",
+      caterCommentCount: [],
       caterCommentName: [],
-      allcaterRate:0,
-      caterRate:0,
+      allcaterRate: 0,
+      caterRate: 0,
+      fullscreenLoading: true,
+      loadIdx: 0,
+      loading: ""
     };
   },
   components: {
@@ -640,62 +713,44 @@ export default {
     // 酒店
     async getHotelEval() {
       // console.log($post);
-      let res = await axios.post(
-        this.baseUrl + "/placeComment/findCommentList",
-        qs.stringify({
-          areaName: "普陀",
-          commentType: 1,
-          pageNo: 1,
-          pageSize: 10,
-          placeName: "",
-          placeSource: "",
-          placeType: "hotel"
-        })
+      let res = await axios.get(
+        this.baseUrl +
+          "/evaluate/getCommentTypeAndNum?areaName='普陀'&placeType=hotel&queryTime=" +
+          this.timeMonth
       );
       // console.log(res);
       if (res.data.msg == "success") {
-        this.hotelAccount = res.data.data.total;
-        this.hotelLists = res.data.data.list;
+        this.loadIdx += 1;
+        this.hotelAccountList = res.data.data;
+        this.hotelAccount = res.data.data.allCount;
       }
     },
     // 景区
     async getSceEval() {
       // console.log($post);
-      let res = await axios.post(
-        this.baseUrl + "/placeComment/findCommentList",
-        qs.stringify({
-          areaName: "普陀",
-          commentType: "",
-          pageNo: 1,
-          pageSize: 10,
-          placeName: "",
-          placeSource: "",
-          placeType: "scenic"
-        })
+      let res = await axios.get(
+        this.baseUrl +
+          `/evaluate/getCommentTypeAndNum?areaName='普陀'&placeType=scenic&queryTime=${this.timeMonth}`
       );
       // console.log(res);
       if (res.data.msg == "success") {
-        this.scenicAccount = res.data.data.total;
+        this.loadIdx += 1;
+        this.scenicAccountList = res.data.data;
+        this.scenicAccount = res.data.data.allCount;
       }
     },
     // 餐馆
     async getCaterEval() {
       // console.log($post);
-      let res = await axios.post(
-        this.baseUrl + "/placeComment/findCommentList",
-        qs.stringify({
-          areaName: "普陀",
-          commentType: "",
-          pageNo: 1,
-          pageSize: 10,
-          placeName: "",
-          placeSource: "",
-          placeType: "restaurant"
-        })
+      let res = await axios.get(
+        this.baseUrl +
+          `/evaluate/getCommentTypeAndNum?areaName='普陀'&placeType=restaurant&queryTime=${this.timeMonth}`
       );
       // console.log(res);
       if (res.data.msg == "success") {
-        this.cateringAccount = res.data.data.total;
+        this.loadIdx += 1;
+        this.cateringAccountList = res.data.data;
+        this.cateringAccount = res.data.data.allCount;
       }
     },
     // 获取新增评论量,累计好评量
@@ -703,18 +758,27 @@ export default {
       let res = await axios.get(
         this.baseUrl +
           "/evaluate/getNewCommentNum?areaName='普陀'&queryTime=" +
-          this.timeMonth
+          this.lastYear
       );
       // console.log(res);
       if (res.data.msg == "success") {
+        this.loadIdx += 1;
         this.addComment = res.data.data.newCommentNum;
       }
       let resGood = await axios.get(
         this.baseUrl + "/evaluate/getHighCommentNum?areaName='普陀'"
       );
+      let resAllGood = await axios.get(
+        this.baseUrl + "/evaluate/getCommentSourceAttribute?areaName='普陀'"
+      );
       // console.log(resGood);
-      if (resGood.data.msg == "success") {
-        this.allGoodComment = resGood.data.data.highCommentNum;
+      if (resGood.data.msg == "success" && resAllGood.data.msg == "success") {
+        this.loadIdx += 1;
+        this.allCommentAccount = resAllGood.data.data.allCount;
+        this.allGoodComment = (
+          (resGood.data.data.highCommentNum / resAllGood.data.data.allCount) *
+          100
+        ).toFixed(1);
       }
     },
     // 评论趋势图
@@ -722,31 +786,34 @@ export default {
       let sceRes = await axios.get(
         this.baseUrl +
           "/evaluate/getAllCommentTrend?areaName='普陀'&queryTime=" +
-          this.timeMonth +
+          this.lastYear +
           "&placeType=scenic"
       );
       // console.log(sceRes);
       if (sceRes.data.msg == "success") {
+        this.loadIdx += 1;
         this.sceTend = sceRes.data.data;
       }
       let hotelRes = await axios.get(
         this.baseUrl +
           "/evaluate/getAllCommentTrend?areaName='普陀'&queryTime=" +
-          this.timeMonth +
+          this.lastYear +
           "&placeType=hotel"
       );
       // console.log(hotelRes);
       if (hotelRes.data.msg == "success") {
+        this.loadIdx += 1;
         this.hotelTend = hotelRes.data.data;
       }
       let caterRes = await axios.get(
         this.baseUrl +
           "/evaluate/getAllCommentTrend?areaName='普陀'&queryTime=" +
-          this.timeMonth +
+          this.lastYear +
           "&placeType=restaurant"
       );
       // console.log(caterRes);
       if (caterRes.data.msg == "success") {
+        this.loadIdx += 1;
         this.caterTend = caterRes.data.data;
       }
       // console.log(this.sceTend, this.hotelTend, this.caterTend);
@@ -772,6 +839,11 @@ export default {
         caterMonths.push(element.timeDate);
         caterAccount.push(element.commentNum);
       });
+      let allMonths = sceMonths.map(x => {
+        // console.log(x.indexOf('-'));
+        return x.substring(x.indexOf("-") + 1, x.length) + "月";
+      });
+      // console.log(allMonths);
       // console.log(
       //   sceMonths,
       //   hotelMonths,
@@ -801,18 +873,19 @@ export default {
           }
         },
         grid: {
-          left: "3%",
-          top: "15%",
-          right: "4%",
+          left: "0%",
+          top: "20%",
+          right: "0%",
           bottom: "3%",
           containLabel: true
         },
         xAxis: {
           type: "category",
-          data: sceMonths,
+          data: allMonths,
           axisLabel: {
             show: true,
-            color: "#B2D2E3"
+            color: "#B2D2E3",
+            fontSize: 10
           },
           axisLine: {
             show: false
@@ -897,6 +970,7 @@ export default {
         this.baseUrl + "/evaluate/getCommentSourceAttribute?areaName=普陀"
       );
       if (res.data.msg == "success") {
+        this.loadIdx += 1;
         // console.log(res.data.data);
         this.commentAddress = res.data.data.attribute;
         this.commentAddressAccount = res.data.data.allCount;
@@ -932,20 +1006,20 @@ export default {
         // backgroundColor:"#000",
         tooltip: {
           trigger: "item",
-          formatter: "{a} <br/>{b}: {c} ({d}%)"
+          formatter: "{b}: {c}条 ({d}%)"
         },
         legend: {
-          orient: "vertical",
-          left: 10,
-          show: false,
-          data: commentAddressName
+          // orient: "vertical",
+          // left: 10,
+          show: false
+          // data: commentAddressName
         },
         series: [
           {
             // name: "途牛",
             type: "pie",
-            radius: ["50%", "68%"],
-
+            radius: ["43%", "60%"],
+            center: ["50%", "60%"],
             label: {
               formatter: " {b} \n\n{c}条 {d}%  ",
               padding: [0, -90]
@@ -953,8 +1027,53 @@ export default {
             labelLine: {
               normal: {
                 show: true,
-                length: 20,
-                length2: 90,
+                length: 10,
+                length2: 80,
+                lineStyle: {
+                  width: 2,
+                  color: "#229BB2"
+                }
+              }
+            },
+            data: commentAddressCount,
+            color: [
+              "#C057FF",
+              "#02EADA",
+              "#F99737",
+              "#68FF67",
+              "#207FF6",
+              "#F4C60F"
+            ]
+          }
+        ]
+      };
+      var option1 = {
+        // backgroundColor:"#000",
+        tooltip: {
+          trigger: "item",
+          formatter: "{b}: {c}条 ({d}%)"
+        },
+        legend: {
+          // orient: "vertical",
+          // left: 10,
+          show: false
+          // data: commentAddressName
+        },
+        series: [
+          {
+            // name: "途牛",
+            type: "pie",
+            radius: ["53%", "70%"],
+            center: ["50%", "60%"],
+            label: {
+              formatter: " {b} \n\n{c}条 {d}%  ",
+              padding: [0, -90]
+            },
+            labelLine: {
+              normal: {
+                show: true,
+                length: 10,
+                length2: 80,
                 lineStyle: {
                   width: 2,
                   color: "#229BB2"
@@ -982,7 +1101,8 @@ export default {
         this.baseUrl + "/evaluate/getNewestComments?areaName=普陀"
       );
       if (res.data.msg == "success") {
-        console.log(res.data.data);
+        this.loadIdx += 1;
+        // console.log(res.data.data);
         this.newComment = res.data.data;
       }
     },
@@ -999,6 +1119,7 @@ export default {
       );
       // console.log(res);
       if (res.data.msg == "success") {
+        this.loadIdx += 1;
         this.scenicCommentDimensionality = res.data.data;
       }
       let secnRes = await axios.get(
@@ -1010,48 +1131,79 @@ export default {
       );
       // console.log(secnRes);
       if (secnRes.data.msg == "success") {
+        this.loadIdx += 1;
         this.scenicCommentDim = secnRes.data.data;
       }
       let scenicCommentDimensionalityName = [];
       let scenicCommentDimensionalityCount = [];
       this.d = [];
-
-      
-      this.scenicCommentDimensionality.forEach(ele => {
-        this.d.push({ name: ele.sourceName, value: 0 });
-
-        if (ele.sourceName == "LVMAMA") {
+      let hotelCommentDimensionalityAll = [
+        {
+          name: "LVMAMA",
+          value: 0
+        },
+        {
+          name: "MEITUAN",
+          value: 0
+        },
+        {
+          name: "QUNAR",
+          value: 0
+        },
+        {
+          name: "TONGCHENGLVYOU",
+          value: 0
+        },
+        {
+          name: "TUNIU",
+          value: 0
+        }
+      ];
+      hotelCommentDimensionalityAll.forEach((ele, i) => {
+        this.scenicCommentDimensionality.forEach((element, i) => {
+          if (ele.name == element.sourceName) {
+            hotelCommentDimensionalityAll[i].value = element.totalScore;
+          }
+        });
+      });
+      hotelCommentDimensionalityAll.forEach(ele => {
+        this.d.push({ name: ele.name, value: 0 });
+        if (ele.name == "LVMAMA") {
           scenicCommentDimensionalityName.push({ text: "驴妈妈" });
-          scenicCommentDimensionalityCount.push(ele.totalScore.toFixed(2));
-        } else if (ele.sourceName == "MEITUAN") {
+          scenicCommentDimensionalityCount.push(ele.value.toFixed(2));
+        } else if (ele.name == "MEITUAN") {
           scenicCommentDimensionalityName.push({ text: "美团" });
-          scenicCommentDimensionalityCount.push(ele.totalScore.toFixed(2));
-        } else if (ele.sourceName == "QUNAR") {
+          scenicCommentDimensionalityCount.push(ele.value.toFixed(2));
+        } else if (ele.name == "QUNAR") {
           scenicCommentDimensionalityName.push({ text: "去哪儿" });
-          scenicCommentDimensionalityCount.push(ele.totalScore.toFixed(2));
-        } else if (ele.sourceName == "TONGCHENGLVYOU") {
+          scenicCommentDimensionalityCount.push(ele.value.toFixed(2));
+        } else if (ele.name == "TONGCHENGLVYOU") {
           scenicCommentDimensionalityName.push({ text: "同程" });
-          scenicCommentDimensionalityCount.push(ele.totalScore.toFixed(2));
-        } else if (ele.sourceName == "TUNIU") {
+          scenicCommentDimensionalityCount.push(ele.value.toFixed(2));
+        } else if (ele.name == "TUNIU") {
           scenicCommentDimensionalityName.push({ text: "途牛" });
-          scenicCommentDimensionalityCount.push(ele.totalScore.toFixed(2));
-        } else if (ele.sourceName == "XIECHENG") {
+          scenicCommentDimensionalityCount.push(ele.value.toFixed(2));
+        } else if (ele.name == "XIECHENG") {
           scenicCommentDimensionalityName.push({ text: "携程" });
-          scenicCommentDimensionalityCount.push(ele.totalScore.toFixed(2));
+          scenicCommentDimensionalityCount.push(ele.value.toFixed(2));
         }
       });
       // console.log(this.d);
-      let count = 0
+      let count = 0;
       let countLittle = 0;
-      scenicCommentDimensionalityCount.forEach(element => {
-        count+=1;
-        countLittle+= element*1
+      // console.log( this.scenicCommentDim);
+      this.scenicCommentDimensionality.forEach(element => {
+        // console.log(element);
+        count += 1;
+        countLittle += element.totalScore * 1;
       });
-      this.allscenicRate = (countLittle/count).toFixed(2)
+      this.allscenicRate = (countLittle / count).toFixed(2);
+      // console.log(this.allscenicRate);
       this.commentDimensionalityTable = this.$echarts.init(
         this.$refs.word_mouth_scenic_comment_dimensionality_table
       );
       var option = {
+        tooltip: {},
         radar: [
           {
             indicator: scenicCommentDimensionalityName,
@@ -1166,20 +1318,20 @@ export default {
           `	/evaluate/getCommentDimensionScore?areaName='普陀'&queryTime=
           ${this.timeMonth}&placeName=${this.scenicPlaceName}&placeType=scenic`
       );
-      console.log(this.scenicPlaceName);
+      // console.log(this.scenicPlaceName);
       if (res.data.msg == "success") {
+        this.loadIdx += 1;
         let a = res.data.data;
         // console.log(a);
         this.d.forEach((ele, i) => {
           for (let m = 0; m < a.length; m++) {
-            
-            console.log(a);
+            // console.log(a);
             if (ele.name == a[m].sourceName) {
               this.d[i].value = a[m].totalScore;
             }
           }
         });
-        
+
         // console.log(this.d);
         this.littleLists = [];
         this.d.forEach(element => {
@@ -1187,13 +1339,13 @@ export default {
         });
         let count = 0;
         let littleCount = 0;
-        this.littleLists.forEach(element => {
-         count += 1
-            littleCount += element*1 
+        a.forEach(element => {
+          count += 1;
+          littleCount += element.totalScore * 1;
         });
-        console.log(count,littleCount);
-        this.scenicRate = (littleCount / count).toFixed(2)
-          this.comment_dimensionality_table();
+        // console.log(count, littleCount);
+        this.scenicRate = (littleCount / count).toFixed(2);
+        this.comment_dimensionality_table();
         // console.log(this.littleLists);
       }
     },
@@ -1207,6 +1359,7 @@ export default {
       );
       // console.log(res);
       if (res.data.msg == "success") {
+        this.loadIdx += 1;
         this.hotelCommentDimensionality = res.data.data;
       }
       let secnRes = await axios.get(
@@ -1218,50 +1371,80 @@ export default {
       );
       // console.log(secnRes);
       if (secnRes.data.msg == "success") {
+        this.loadIdx += 1;
         this.hotelCommentDim = secnRes.data.data;
       }
       let hotelCommentDimensionalityName = [];
       let hotelCommentDimensionalityCount = [];
       this.hotelD = [];
+      let hotelCommentDimensionalityAll = [
+        {
+          name: "LVMAMA",
+          value: 0
+        },
+        {
+          name: "MEITUAN",
+          value: 0
+        },
+        {
+          name: "QUNAR",
+          value: 0
+        },
+        {
+          name: "TONGCHENGLVYOU",
+          value: 0
+        },
+        {
+          name: "TUNIU",
+          value: 0
+        }
+      ];
+      hotelCommentDimensionalityAll.forEach((ele, i) => {
+        this.hotelCommentDimensionality.forEach(element => {
+          if (ele.name == element.sourceName) {
+            hotelCommentDimensionalityAll[i].value = element.totalScore;
+          }
+        });
+      });
+      hotelCommentDimensionalityAll.forEach(ele => {
+        this.hotelD.push({ name: ele.name, value: 0 });
 
-      this.hotelCommentDimensionality.forEach(ele => {
-        this.hotelD.push({ name: ele.sourceName, value: 0 });
-
-        if (ele.sourceName == "LVMAMA") {
+        if (ele.name == "LVMAMA") {
           hotelCommentDimensionalityName.push({ text: "驴妈妈" });
-          hotelCommentDimensionalityCount.push(ele.totalScore.toFixed(2));
-        } else if (ele.sourceName == "MEITUAN") {
+          hotelCommentDimensionalityCount.push(ele.value.toFixed(2));
+        } else if (ele.name == "MEITUAN") {
           hotelCommentDimensionalityName.push({ text: "美团" });
-          hotelCommentDimensionalityCount.push(ele.totalScore.toFixed(2));
-        } else if (ele.sourceName == "QUNAR") {
+          hotelCommentDimensionalityCount.push(ele.value.toFixed(2));
+        } else if (ele.name == "QUNAR") {
           hotelCommentDimensionalityName.push({ text: "去哪儿" });
-          hotelCommentDimensionalityCount.push(ele.totalScore.toFixed(2));
-        } else if (ele.sourceName == "TONGCHENGLVYOU") {
+          hotelCommentDimensionalityCount.push(ele.value.toFixed(2));
+        } else if (ele.name == "TONGCHENGLVYOU") {
           hotelCommentDimensionalityName.push({ text: "同程" });
-          hotelCommentDimensionalityCount.push(ele.totalScore.toFixed(2));
-        } else if (ele.sourceName == "TUNIU") {
+          hotelCommentDimensionalityCount.push(ele.value.toFixed(2));
+        } else if (ele.name == "TUNIU") {
           hotelCommentDimensionalityName.push({ text: "途牛" });
-          hotelCommentDimensionalityCount.push(ele.totalScore.toFixed(2));
-        } else if (ele.sourceName == "XIECHENG") {
+          hotelCommentDimensionalityCount.push(ele.value.toFixed(2));
+        } else if (ele.name == "XIECHENG") {
           hotelCommentDimensionalityName.push({ text: "携程" });
-          hotelCommentDimensionalityCount.push(ele.totalScore.toFixed(2));
+          hotelCommentDimensionalityCount.push(ele.value.toFixed(2));
         }
       });
-      let count = 0
+      let count = 0;
       let countLittle = 0;
-      hotelCommentDimensionalityCount.forEach(element => {
-        count+=1;
-        countLittle+= element*1
+      this.hotelCommentDimensionality.forEach(element => {
+        count += 1;
+        countLittle += element.totalScore * 1;
       });
-      this.allhotelRate = (countLittle/count).toFixed(2)
+      this.allhotelRate = (countLittle / count).toFixed(2);
       // console.log(this.hotelD);
       this.commentDimensionalityHotelTable = this.$echarts.init(
         this.$refs.word_mouth_hotel_comment_dimensionality_table
       );
       var option = {
+        tooltip: {},
         radar: [
           {
-            indicator:hotelCommentDimensionalityName,
+            indicator: hotelCommentDimensionalityName,
             center: ["50%", "52%"], // 位置
             radius: 50, //大小
             startAngle: 90,
@@ -1374,10 +1557,10 @@ export default {
           ${this.timeMonth}&placeName=${this.hotelPlaceName}&placeType=hotel`
       );
       if (res.data.msg == "success") {
+        this.loadIdx += 1;
         let a = res.data.data;
         // console.log(a);
-        
-       
+
         this.hotelD.forEach((ele, i) => {
           for (let m = 0; m < a.length; m++) {
             if (ele.name == a[m].sourceName) {
@@ -1392,13 +1575,13 @@ export default {
         });
         let count = 0;
         let littleCount = 0;
-        this.hotellittleLists.forEach(element => {
-          count += 1
-            littleCount += element*1 
+        a.forEach(element => {
+          count += 1;
+          littleCount += element.totalScore * 1;
         });
-         this.hotelRate = (littleCount / count).toFixed(2)
-        console.log(count,littleCount);
-          this.comment_hotel_dimensionality_table();
+        this.hotelRate = (littleCount / count).toFixed(2);
+        // console.log(count, littleCount);
+        this.comment_hotel_dimensionality_table();
         // console.log(this.hotellittleLists);
       }
     },
@@ -1412,6 +1595,7 @@ export default {
       );
       // console.log(res);
       if (res.data.msg == "success") {
+        this.loadIdx += 1;
         this.caterCommentDimensionality = res.data.data;
       }
       let secnRes = await axios.get(
@@ -1423,54 +1607,83 @@ export default {
       );
       // console.log(secnRes);
       if (secnRes.data.msg == "success") {
+        this.loadIdx += 1;
         this.caterCommentDim = secnRes.data.data;
       }
       let caterCommentDimensionalityName = [];
       let caterCommentDimensionalityCount = [];
       this.caterD = [];
+      let hotelCommentDimensionalityAll = [
+        {
+          name: "LVMAMA",
+          value: 0
+        },
+        {
+          name: "MEITUAN",
+          value: 0
+        },
+        {
+          name: "QUNAR",
+          value: 0
+        },
+        {
+          name: "TONGCHENGLVYOU",
+          value: 0
+        },
+        {
+          name: "TUNIU",
+          value: 0
+        }
+      ];
+      hotelCommentDimensionalityAll.forEach((ele, i) => {
+        this.caterCommentDimensionality.forEach(element => {
+          if (ele.name == element.sourceName) {
+            hotelCommentDimensionalityAll[i].value = element.totalScore;
+          }
+        });
+      });
 
-      this.caterCommentDimensionality.forEach(ele => {
-        this.caterD.push({ name: ele.sourceName, value: 0 });
+      hotelCommentDimensionalityAll.forEach(ele => {
+        this.caterD.push({ name: ele.name, value: 0 });
 
-        if (ele.sourceName == "LVMAMA") {
+        if (ele.name == "LVMAMA") {
           caterCommentDimensionalityName.push({ text: "驴妈妈" });
-          caterCommentDimensionalityCount.push(ele.totalScore.toFixed(2));
-        } else if (ele.sourceName == "MEITUAN") {
+          caterCommentDimensionalityCount.push(ele.value.toFixed(2));
+        } else if (ele.name == "MEITUAN") {
           caterCommentDimensionalityName.push({ text: "美团" });
-          caterCommentDimensionalityCount.push(ele.totalScore.toFixed(2));
-        } else if (ele.sourceName == "QUNAR") {
+          caterCommentDimensionalityCount.push(ele.value.toFixed(2));
+        } else if (ele.name == "QUNAR") {
           caterCommentDimensionalityName.push({ text: "去哪儿" });
-          caterCommentDimensionalityCount.push(ele.totalScore.toFixed(2));
-        } else if (ele.sourceName == "TONGCHENGLVYOU") {
+          caterCommentDimensionalityCount.push(ele.value.toFixed(2));
+        } else if (ele.name == "TONGCHENGLVYOU") {
           caterCommentDimensionalityName.push({ text: "同程" });
-          caterCommentDimensionalityCount.push(ele.totalScore.toFixed(2));
-        } else if (ele.sourceName == "TUNIU") {
+          caterCommentDimensionalityCount.push(ele.value.toFixed(2));
+        } else if (ele.name == "TUNIU") {
           caterCommentDimensionalityName.push({ text: "途牛" });
-          caterCommentDimensionalityCount.push(ele.totalScore.toFixed(2));
-        } else if (ele.sourceName == "XIECHENG") {
+          caterCommentDimensionalityCount.push(ele.value.toFixed(2));
+        } else if (ele.name == "XIECHENG") {
           caterCommentDimensionalityName.push({ text: "携程" });
-          caterCommentDimensionalityCount.push(ele.totalScore.toFixed(2));
+          caterCommentDimensionalityCount.push(ele.value.toFixed(2));
         }
       });
       // console.log(this.caterD);
-      let count = 0
+      let count = 0;
       let countLittle = 0;
-      caterCommentDimensionalityCount.forEach(element => {
-        count+=1;
-        countLittle+= element*1
+      this.caterCommentDimensionality.forEach(element => {
+        count += 1;
+        countLittle += element.totalScore * 1;
       });
-      this.allcaterRate = (countLittle/count).toFixed(2)
+      this.allcaterRate = (countLittle / count).toFixed(2);
       this.commentDimensionalityCateringTable = this.$echarts.init(
         this.$refs.word_mouth_catering_comment_dimensionality_table
       );
-      // console.log();
-      console.log(this.$refs.word_mouth_hotel_comment_total_account_count);
       var option = {
+        tooltip: {},
         radar: [
           {
             indicator: caterCommentDimensionalityName,
-            center: ["46%", "45%"], // 位置
-            radius: 60, //大小
+            center: ["50%", "52%"], // 位置
+            radius: 50, //大小
             startAngle: 90,
             splitNumber: 4,
             shape: "circle",
@@ -1582,9 +1795,9 @@ export default {
       );
       // console.log(this.caterPlaceName);
       if (res.data.msg == "success") {
+        this.loadIdx += 1;
         let a = res.data.data;
         // console.log(a);
-        
         this.caterD.forEach((ele, i) => {
           for (let m = 0; m < a.length; m++) {
             if (ele.name == a[m].sourceName) {
@@ -1599,18 +1812,20 @@ export default {
         });
         let count = 0;
         let littleCount = 0;
-         this.caterlittleLists.forEach(element => {
-         count += 1
-            littleCount += element*1 
+        a.forEach(element => {
+          count += 1;
+          littleCount += element.totalScore * 1;
         });
         // console.log(count,littleCount);
-        this.caterRate = (littleCount / count).toFixed(2)
-          this.comment_catering_dimensionality_table();
+        this.caterRate = (littleCount / count).toFixed(2);
+        this.comment_catering_dimensionality_table();
         // console.log(this.caterlittleLists);
       }
     },
     // 景区评论量
     async comment_count_shenjia_table() {
+      this.scenicCommentCount = [];
+      this.scenicCommentName = [];
       let res = await axios.get(
         this.baseUrl +
           "/evaluate/getCommentNumTop5?areaName='普陀'&queryTime=" +
@@ -1619,6 +1834,7 @@ export default {
       );
       // console.log(res);
       if (res.data.msg == "success") {
+        this.loadIdx += 1;
         this.scenicCommentCount = res.data.data;
       }
       let highComment = [];
@@ -1722,7 +1938,7 @@ export default {
                     // console.log(data);
                     for (let i = 1; i <= 5; i++) {
                       // const element = array[i];
-                      return i + "、" + data.name;
+                      return data.name;
                     }
                   },
                   show: true,
@@ -1764,6 +1980,8 @@ export default {
     },
     // 酒店评论量
     async comment_count_hotel_table() {
+      this.hotelCommentCount = [];
+      this.hotelCommentName = [];
       let res = await axios.get(
         this.baseUrl +
           "/evaluate/getCommentNumTop5?areaName='普陀'&queryTime=" +
@@ -1772,6 +1990,7 @@ export default {
       );
       // console.log(res);
       if (res.data.msg == "success") {
+        this.loadIdx += 1;
         this.hotelCommentCount = res.data.data;
       }
       let highComment = [];
@@ -1908,6 +2127,8 @@ export default {
     },
     // 餐饮评论量
     async comment_count_catering_table() {
+      this.caterCommentCount = [];
+      this.caterCommentName = [];
       let res = await axios.get(
         this.baseUrl +
           "/evaluate/getCommentNumTop5?areaName='普陀'&queryTime=" +
@@ -1916,6 +2137,7 @@ export default {
       );
       // console.log(res);
       if (res.data.msg == "success") {
+        this.loadIdx += 1;
         this.caterCommentCount = res.data.data;
       }
       let highComment = [];
@@ -1928,6 +2150,7 @@ export default {
         middleComment.push(element.midNum);
         lowComment.push(element.lowNum);
       });
+      // console.log(this.caterCommentName);
       this.cateringCountTable = this.$echarts.init(
         this.$refs.word_mouth_catering_comment_total_account_count
       );
@@ -2064,7 +2287,7 @@ export default {
     // 上一页，下一页
     handleCurrentChange(val) {
       this.currentPage = val;
-      console.log(val);
+      // console.log(val);
       this.getCommnetList();
     },
     // 获取评价列表
@@ -2075,61 +2298,153 @@ export default {
           areaName: "普陀",
           commentType: this.commnetType,
           pageNo: this.currentPage,
-          pageSize:6,
+          pageSize: 6,
           placeName: this.commnetObjName,
           placeSource: this.commnetOrigin,
-          placeType: this.commnetObjType
+          placeType: this.commnetObjType,
+          startTime: this.commentStart,
+          endTime: this.commentEnd
         })
       );
-      console.log(res);
+      // console.log(res);
       if (res.data.msg == "success") {
         this.commentList = res.data.data.list;
         this.allAccount = res.data.data.total;
       }
-      console.log(this.commentList);
+      // console.log(this.commentList);
     },
-    reset(){
-       this.commnetType='';
-          this.currentPage=1;
-          this.commnetObjName='';
-          this.commnetOrigin='';
-         this.commnetObjType='scenic';
+    reset() {
+      this.commnetType = "";
+      this.currentPage = 1;
+      this.commnetObjName = "";
+      this.commnetOrigin = "";
+      this.commnetObjType = "scenic";
+      this.commentStart = "";
+      this.commentEnd = "";
       this.getCommnetList();
+    },
+    changeTime() {
+      this.loading = this.$loading({
+        lock: true,
+        text: "Loading",
+        spinner: "el-icon-loading",
+        background: "rgba(0, 0, 0, 0.7)"
+      });
+      this.loadIdx = 0;
+      this.getHotelEval();
+      this.getSceEval();
+      this.getCaterEval();
+      // 获取新增评论量
+      this.getAddComment();
+      // 获取最新评价
+      this.getNewComment();
+      // 获取全部评价
+      this.getCommnetList();
+      this.comment_trend_table();
+      this.comment_address_table();
+      this.comment_dimensionality_table();
+      this.comment_hotel_dimensionality_table();
+      this.comment_catering_dimensionality_table();
+      setTimeout(() => {
+        this.comment_count_shenjia_table();
+        this.comment_count_hotel_table();
+        this.comment_count_catering_table();
+      }, 1000);
+    },
+    changeTime2() {
+      this.loading = this.$loading({
+        lock: true,
+        text: "Loading",
+        spinner: "el-icon-loading",
+        background: "rgba(0, 0, 0, 0.7)"
+      });
+      this.loadIdx = 0;
+      this.timeMonth = "";
+      this.getHotelEval();
+      this.getSceEval();
+      this.getCaterEval();
+      // 获取新增评论量
+      this.getAddComment();
+      // 获取最新评价
+      this.getNewComment();
+      // 获取全部评价
+      this.getCommnetList();
+      this.comment_trend_table();
+      this.comment_address_table();
+      this.comment_dimensionality_table();
+      this.comment_hotel_dimensionality_table();
+      this.comment_catering_dimensionality_table();
+      setTimeout(() => {
+        this.comment_count_shenjia_table();
+        this.comment_count_hotel_table();
+        this.comment_count_catering_table();
+      }, 1000);
     }
   },
   mounted() {
-    this.getHotelEval();
-    this.getSceEval();
-    this.getCaterEval();
-    // 获取新增评论量
-    this.getAddComment();
-    // 获取最新评价
-    this.getNewComment();
-    // 获取全部评价
-    this.getCommnetList();
-    this.comment_trend_table();
-    this.comment_address_table();
-    this.comment_dimensionality_table();
-    this.comment_count_shenjia_table();
-    this.comment_hotel_dimensionality_table();
-    this.comment_catering_dimensionality_table();
-    this.comment_count_hotel_table();
-    this.comment_count_catering_table();
+    this.loading = this.$loading({
+      lock: true,
+      text: "Loading",
+      spinner: "el-icon-loading",
+      background: "rgba(0, 0, 0, 0.7)"
+    });
+    // 获取上一年的年份
+    let newDate = new Date();
+    // this.timeMonth = newDate.getFullYear() + "-" + newDate.getMonth();
+    if (newDate.getMonth() + 1 < 12) {
+      this.lastYear = newDate.getFullYear() - 1 + "-12";
+    } else {
+      this.lastYear = newDate.getFullYear() + "-12";
+    }
+    // console.log(this.lastYear);
+    if (this.lastYear != "") {
+      this.getHotelEval();
+      this.getSceEval();
+      this.getCaterEval();
+      // 获取新增评论量
+      this.getAddComment();
+      // 获取最新评价
+      this.getNewComment();
+      // 获取全部评价
+      this.getCommnetList();
+      this.comment_trend_table();
+      this.comment_address_table();
+      this.comment_dimensionality_table();
+      this.comment_count_shenjia_table();
+      this.comment_hotel_dimensionality_table();
+      this.comment_catering_dimensionality_table();
+      this.comment_count_hotel_table();
+      this.comment_count_catering_table();
+    }
+  },
+  watch: {
+    loadIdx(val) {
+      console.log(val);
+      if (val >= 19) {
+        this.loading.close();
+      }
+    }
   }
 };
 </script>
 <style>
+.el-picker-panel.down_date .el-month-table td.disabled .cell {
+  background-color: #072342;
+  color: #999;
+}
 .word_mouth_all_content {
   width: 100%;
   height: 100%;
-  display: flex;
+  overflow: hidden;
+  /* display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: space-between; */
   background-image: url("../../assets/image/bg.jpg");
   background-size: 100% 100%;
   font-family: PingFang SC;
   position: relative;
 }
+
 .word_mouth_comment_dialog_bg {
   position: absolute;
   left: 0;
@@ -2141,10 +2456,10 @@ export default {
 }
 .word_mouth_comment_dialog {
   width: 62%;
-  height: 60%;
+  height: 70%;
   position: absolute;
   left: calc((100% - 62%) / 2);
-  top: calc((100% - 60%) / 2);
+  top: calc((100% - 70%) / 2);
   z-index: 300;
   /* background: #fff; */
   background-image: url("../../assets/image/mouth_dig_bg.png");
@@ -2153,7 +2468,7 @@ export default {
 .word_mouth_title {
   width: 100%;
   height: 8.61%;
-  background-image: url("../../assets/image/title.png");
+  /* background-image: url("../../assets/image/title.png"); */
   background-size: 100% 100%;
   /* line-height: 60px; */
   font-size: 22px;
@@ -2173,8 +2488,8 @@ export default {
   /* margin-top: -14px; */
 }
 .word_mouth_content {
-  height: 90%;
-  margin-top: 1%;
+  height: 86%;
+  /* margin-top: 1%; */
   margin-bottom: 1%;
   /* margin-top: 20px; */
   display: flex;
@@ -2270,7 +2585,7 @@ export default {
   position: absolute;
   width: 100%;
   text-align: center;
-  top: 50%;
+  top: 60%;
   margin-top: -14px;
 }
 .synthesize_add_comment {
@@ -2279,21 +2594,28 @@ export default {
   background-image: url("../../assets/image/mouth_add_comment.png");
   background-size: 100% 100%;
   margin-right: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   /* padding: 1% 0; */
   text-align: center;
   color: rgba(12, 227, 220, 1);
 }
 .synthesize_add_comment_title {
-  margin: 10px 5px 0;
+  /* margin: 15px 5px 5px 0; */
+  margin-top: 5px;
   color: rgba(178, 210, 227, 1);
   font-size: 14px;
 }
-.synthesize_add_comment_account img {
-  /* display: flex;
-  align-items: center;
-  text-align: center; */
-  vertical-align: center;
+.synthesize_add_comment_account {
+  margin-top: 5px;
 }
+/* .synthesize_add_comment_account img {
+   display: flex;
+  align-items: center;
+  text-align: center;
+  vertical-align: center;
+} */
 .mouth_add_up {
   margin-left: 10px;
   display: flex;
@@ -2344,7 +2666,6 @@ export default {
 .synthesize_distribution_comments_content {
   width: 100%;
   height: 85%;
-  /* background-color: #fff; */
 }
 .synthesize_distribution_comments_table_content {
   width: 100%;
@@ -2399,7 +2720,9 @@ export default {
 .synthesize_distribution_comments_table {
   position: absolute;
   width: 100%;
-  height: 100%;
+  height: 80%;
+  /* top: 20%; */
+  bottom: 0;
   /* border: 1px solid #000; */
 }
 /* <!-- 最新评论 --> */
@@ -2418,10 +2741,10 @@ export default {
 }
 .synthesize_latest_comments_list > div {
   width: 100%;
-  /* height: 18%; */
-  /* padding: 1% 0; */
+  height: 18%;
+  padding: 1% 0;
   display: flex;
-  /* padding: 2.5% 0; */
+  padding: 1.5% 0;
   font-size: 14px;
   font-family: PingFang SC;
   font-weight: 500;
@@ -2429,13 +2752,38 @@ export default {
   border-bottom: 1px solid #006aa6;
 }
 .mouth_comment_result {
-  padding: 0.5% 5%;
+  width: 15%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-size: 12px;
   background-image: url("../../assets/image/mouth_comment_result.png");
   background-size: 100% 100%;
 }
+.mouth_comment_result1 {
+  width: 15%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  background-image: url("../../assets/image/mouth_comment_result _center.png");
+  background-size: 100% 100%;
+}
+.mouth_comment_result2 {
+  width: 15%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  background-image: url("../../assets/image/mouth_comment_result_bad.png");
+  background-size: 100% 100%;
+}
 .mouth_comment_address {
-  padding: 0.5% 5%;
+  width: 15%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  /* padding: 0.5% 5%; */
   font-size: 12px;
   background-image: url("../../assets/image/mouth_comment_address.png");
   background-size: 100% 100%;
@@ -2446,6 +2794,8 @@ export default {
   white-space: nowrap; /*规定段落中的文本不进行换行*/
   overflow: hidden; /*内容会被修剪，并且其余内容是不可见的。*/
   text-overflow: ellipsis; /*显示省略号来代表被修剪的文本*/
+  display: flex;
+  align-items: center;
 }
 /* 查看更多评论 */
 .synthesize_check_comments {
@@ -2455,11 +2805,11 @@ export default {
   padding: 1% 2%;
   text-align: center;
   box-sizing: border-box;
-  padding: 2px 0;
+  padding: 4px 0;
   background: rgba(24, 61, 88, 1);
   border: 1px solid rgba(0, 106, 166, 1);
   border-radius: 10px;
-  font-size: 8px;
+  font-size: 13px;
   font-weight: 500;
   color: rgba(178, 210, 227, 1);
   cursor: pointer;
@@ -2507,16 +2857,40 @@ export default {
   background-image: url("../../assets/image/mouth_total_comment.png");
   background-size: 100% 100%;
   padding-left: 1%;
+  font-size: 14px;
+  color: #fff;
 }
-
-.word_mouth_scenic_comment_classify > img {
+.word_mouth_scenic_comment_classify > div {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  justify-content: center;
+  padding-left: 5px;
+  box-sizing: border-box;
+}
+.word_mouth_scenic_comment_classify > div:nth-of-type(1) {
   width: 32.8%;
   height: 80%;
+  background-image: url("../../assets/image/mouth_scenic_comment_classify1.png");
+  background-size: 100% 100%;
+  vertical-align: middle;
+}
+.word_mouth_scenic_comment_classify > div:nth-of-type(2) {
+  width: 32.8%;
+  height: 80%;
+  background-image: url("../../assets/image/mouth_scenic_comment_classify2.png");
+  background-size: 100% 100%;
+}
+.word_mouth_scenic_comment_classify > div:nth-of-type(3) {
+  width: 32.8%;
+  height: 80%;
+  background-image: url("../../assets/image/mouth_scenic_comment_classify3.png");
+  background-size: 100% 100%;
 }
 /* 景区评分维度 */
 .word_mouth_scenic_comment_dimensionality {
   width: 100%;
-  height: 30%;
+  height: 34%;
   /* border: 1px solid #000; */
 }
 .word_mouth_scenic_comment_dimensionality_content {
@@ -2663,7 +3037,7 @@ export default {
 .word_mouth_comment_dialog_title img {
   cursor: pointer;
   z-index: 10;
-  width: 2.7%;
+  /* width: 3%; */
   height: 60%;
   position: absolute;
   right: 2.5%;
@@ -2685,7 +3059,7 @@ export default {
   width: 97%;
   margin: 0 auto;
   margin-top: 0.5%;
-  height: 78%;
+  height: 87%;
   background: rgba(5, 51, 91, 0.5);
 }
 .word_mouth_comment_dialog_choose {
@@ -2696,6 +3070,9 @@ export default {
   padding: 10px;
   box-sizing: border-box;
 }
+.word_mouth_comment_dialog_choose > div {
+  margin-bottom: 10px;
+}
 .dig_comment_source {
   font-size: 12px;
   display: flex;
@@ -2704,19 +3081,19 @@ export default {
   color: rgba(255, 255, 255, 1);
 }
 .dig_comment_source_one {
-  width: 20%;
+  width: 22%;
 }
 .dig_comment_source_two {
-  width: 23%;
+  width: 24%;
 }
 .dig_comment_source_three {
-  width: 38%;
+  width: 42%;
 }
 .dig_comment_source_four {
-  width: 18%;
+  width: 21%;
 }
 .dig_comment_source_five {
-  width: 42%;
+  width: 32%;
 }
 .dig_comment_source_six {
   width: 104px;
@@ -2737,8 +3114,8 @@ export default {
   margin-left: 20px;
   cursor: pointer;
 }
+/*添加下拉三角图标*/
 .dig_comment_source_select .el-select .el-input .el-select__caret {
-  /*添加下拉三角图标*/
   background: url("../../assets/image/mouth_bottom_arrow.png") no-repeat center;
   color: transparent;
 }
@@ -2777,17 +3154,18 @@ export default {
   height: 28px;
   background: rgba(7, 66, 115, 1);
   border: 1px solid rgba(3, 104, 189, 1);
+  color: rgba(255, 255, 255, 1);
   border-radius: 14px;
 }
 .dig_comment_source_time .el-input__icon {
   line-height: 28px;
 }
 .dig_comment_source_time .el-input__prefix {
-  left: 0;
-  right: -90px;
+  /* left: 0;
+  right: -90px; */
 }
 .dig_comment_source_five .el-input__inner {
-  width: 386px;
+  width: 200px;
   height: 28px;
   background: rgba(7, 66, 115, 1);
   border: 1px solid rgba(3, 104, 189, 1);
@@ -2802,7 +3180,7 @@ export default {
 }
 .word_mouth_comment_dialog_list {
   width: 100%;
-  height: 80%;
+  height: 65%;
 }
 .word_mouth_comment_dialog_list table {
   width: 100%;
@@ -2812,10 +3190,13 @@ export default {
 }
 .word_mouth_comment_dialog_list table tr > td {
   text-align: center;
-  font-size: 14px;
+  height: 40px;
+  font-size: 12px;
   font-family: Microsoft YaHei;
   color: rgba(208, 228, 249, 1);
   vertical-align: middle;
+  padding: 6px 0;
+  box-sizing: border-box;
 }
 .word_mouth_comment_dialog_list table tr:nth-of-type(1) {
   background-color: #074273;
@@ -2833,23 +3214,24 @@ export default {
   width: 11%;
 }
 .word_mouth_comment_dialog_list table tr > td:nth-of-type(3) {
-  width: 10%;
+  width: 8%;
 }
 .word_mouth_comment_dialog_list table tr > td:nth-of-type(4) {
   width: 5%;
 }
 .word_mouth_comment_dialog_list table tr > td:nth-of-type(5) {
-  width: 13%;
+  width: 15%;
 }
 .word_mouth_comment_dialog_list table tr > td:nth-of-type(6) {
-  /* width: 30%; */
-  text-overflow: -o-ellipsis-lastline;
+  width: 30%;
+  line-height: 1.25rem;
+  /* text-overflow: -o-ellipsis-lastline;
   overflow: hidden;
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;
-  -webkit-box-orient: vertical;
+  -webkit-box-orient: vertical; */
 }
 .word_mouth_comment_dialog_list table tr > td:nth-of-type(7) {
   width: 12%;
@@ -2871,13 +3253,165 @@ export default {
 .word_mouth_page_total span {
   color: #f8bf58;
 }
-.word_mouth_page_total .el-pagination.is-background .btn-next,
-.el-pagination.is-background .btn-prev,
-.el-pagination.is-background .el-pager li {
+.word_mouth_page_total
+  .el-pagination.is-background.el-pagination--small
+  .btn-next,
+.el-pagination.is-background.el-pagination--small .btn-prev,
+.el-pagination.is-background.el-pagination--small .el-pager li {
   background-color: #0a5b8f;
   color: #fff;
 }
+.word_mouth_page_total .el-pagination.is-background .btn-next,
+.el-pagination.is-background .btn-prev,
+.el-pagination.is-background .el-pager button {
+  background-color: #0a5b8f !important;
+  color: #fff !important;
+}
+.word_mouth_date_all {
+  width: 100%;
+  height: 31px;
+  position: relative;
+}
+.word_mouth_date_all > button {
+  position: absolute;
+  cursor: pointer;
+  bottom: 20px;
+  height: 100%;
+  right: 5%;
+  width: 50px;
+  border: none;
+  color: #fff;
+  z-index: 209;
+  /* background-color: #021730;
+  border: 1px solid #58a2dd; */
+  background: url("../../assets/hotel/pass_date_bg.png") no-repeat;
+  background-size: 100% 100%;
+}
+.word_mouth_date {
+  width: 162px;
+  /* height: 31px; */
+  height: 100%;
+  position: absolute;
+  right: 8%;
+  bottom: 20px;
+  z-index: 200;
+}
+.word_mouth_date .el-input__inner {
+  width: 162px;
+  /* height: 31px; */
+  border: none;
+  color: #3edcfe;
+  background: url("../../assets/hotel/pass_date_bg.png") no-repeat;
+  /* background: url('../../assets/hotel/pass_date_bg.png') no-repeat; */
+  background-size: 100% 100%;
+  cursor: pointer;
+}
+.word_mouth_container_top {
+  height: 49.5%;
+  width: 100%;
+  cursor: pointer;
+}
+.el-input--prefix .el-input__inner {
+  background-color: rgba(7, 66, 115, 1);
+  border: 1px solid rgba(3, 104, 189, 1);
+}
+.word_mouth_date .el-input--prefix .el-input__inner {
+  border: none;
+}
+.el-input__suffix {
+  /* top: -9px; */
+}
+/* 日期 */
+.word_mouth_date .el-input--small .el-input__inner {
+  color: #fff;
+}
+.dig_comment_source_time .el-input--prefix .el-input__inner {
+  background-color: #074273;
+  border-color: #0368bd;
+  color: #d0e4f9;
+}
 @media screen and (max-width: 1400px) {
+  .word_mouth_comment_dialog_list table tr > td {
+    text-align: center;
+    height: 36px;
+    font-size: 12px;
+    font-family: Microsoft YaHei;
+    color: rgba(208, 228, 249, 1);
+    vertical-align: middle;
+    padding: 6px 0;
+    box-sizing: border-box;
+  }
+  .synthesize_add_comment_title {
+    margin-top: 0px;
+    color: rgba(178, 210, 227, 1);
+    font-size: 14px;
+  }
+  .synthesize_add_comment_account {
+    margin-top: 0px;
+  }
+  .dig_comment_source_time .el-input__icon {
+    line-height: 21px;
+  }
+  .word_mouth_content {
+    height: 86%;
+    margin-top: 1%;
+    margin-bottom: 1%;
+    /* margin-top: 20px; */
+    display: flex;
+    /* justify-content: space-around; */
+    padding-left: 2%;
+  }
+  /* 日期选择 */
+  .word_mouth_date_all {
+    width: 100%;
+    height: 5px;
+    position: relative;
+  }
+  .word_mouth_date_all > button {
+    position: absolute;
+    bottom: -9px;
+    /* height: 100%; */
+    height: 24px;
+    right: 4%;
+    width: 46px;
+    border: none;
+    color: #fff;
+    z-index: 209;
+    /* background-color: #021730; */
+    /* border: 1px solid #58a2dd; */
+    background: url("../../assets/hotel/pass_date_bg.png") no-repeat;
+    background-size: 100% 100%;
+  }
+  .word_mouth_date {
+    width: 162px;
+    /* height: 31px; */
+    height: 100%;
+    position: absolute;
+    right: 8%;
+    bottom: 15px;
+    z-index: 200;
+  }
+  /* 查看更多 */
+  .synthesize_latest_comments_list {
+    height: 57%;
+    /* border: 1px solid #000; */
+  }
+  /* 查看更多评论 */
+  .synthesize_check_comments {
+    width: 25%;
+    margin: 0 auto;
+    padding: 1% 2%;
+    text-align: center;
+    box-sizing: border-box;
+    padding: 2px 0;
+    background: rgba(24, 61, 88, 1);
+    border: 1px solid rgba(0, 106, 166, 1);
+    border-radius: 10px;
+    font-size: 8px;
+    font-weight: 500;
+    color: rgba(178, 210, 227, 1);
+    cursor: pointer;
+  }
   .dig_comment_source_one {
     width: 23%;
   }
@@ -2910,7 +3444,7 @@ export default {
     border-radius: 14px;
   }
   .dig_comment_source_five .el-input__inner {
-    width: 246px;
+    width: 187px;
     height: 20px;
     background: rgba(7, 66, 115, 1);
     border: 1px solid rgba(3, 104, 189, 1);
@@ -2942,14 +3476,28 @@ export default {
   .synthesize_latest_comments_list > div {
     width: 100%;
     display: flex;
-    /* height: 18%; */
-    /* padding: 1% 0; */
-    padding: 1.5% 0;
+    height: 18%;
+    padding: 1% 0;
+    /* padding: 1.5% 0; */
     font-size: 14px;
     font-family: PingFang SC;
     font-weight: 500;
     color: rgba(255, 255, 255, 1);
     border-bottom: 1px solid #006aa6;
+  }
+  /* 好中差评 */
+  .word_mouth_scenic_comment_classify {
+    width: 65%;
+    height: 70%;
+    display: flex;
+    /* justify-content: space-around; */
+    align-items: center;
+    text-align: center;
+    background-image: url("../../assets/image/mouth_total_comment.png");
+    background-size: 100% 100%;
+    padding-left: 1%;
+    font-size: 12px;
+    color: #fff;
   }
   .synthesize_distribution_comments_table {
     position: absolute;
@@ -3001,17 +3549,21 @@ export default {
     overflow: hidden; /*内容会被修剪，并且其余内容是不可见的。*/
     text-overflow: ellipsis; /*显示省略号来代表被修剪的文本*/
   }
-  .mouth_comment_result {
+  /* .mouth_comment_result {
     padding: 1% 5%;
     font-size: 12px;
     background-image: url("../../assets/image/mouth_comment_result.png");
     background-size: 100% 100%;
-  }
-  .mouth_comment_address {
+  } */
+  /* .mouth_comment_address {
     padding: 1% 5%;
     font-size: 12px;
     background-image: url("../../assets/image/mouth_comment_address.png");
     background-size: 100% 100%;
+  } */
+  /* 弹框下拉框 */
+  .dig_comment_source .dig_comment_source_select .el-select {
+    height: 20px;
   }
 }
 </style>

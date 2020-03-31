@@ -2,6 +2,21 @@
     <div class="netWork">
         <div class="NW_title">
             <headtop :title='pageTitle'/>
+            <div class="net_date">
+                <el-date-picker
+                    popper-class="down_date"
+                    :clearable="false"
+                    :editable="false"
+                    clear-icon="clearIcon"
+                    v-model="mounthValue"
+                    value-format="yyyy-MM"
+                    type="month"
+                    @change="choseMonth"
+                    :picker-options="pickerOptions1"
+                    placeholder="选择日期">
+                </el-date-picker>
+                <!-- <div class="total_date1_down"></div> -->
+            </div>
         </div>
         <div class="NW_container">
             <div class="NW_top">
@@ -9,13 +24,13 @@
                     <div class="NW_item_title">
                         <div class="NW_item_txt">互联网APP指数偏好</div>
                     </div>
-                    <div class="NW_echarts" ref="netWorkEcharts"></div>
+                    <div class="NW_echarts " ref="netWorkEcharts"></div>
                 </div>
                 <div class="NW_top_center NW_item">
                     <div class="NW_item_title">
                         <div class="NW_item_txt">旅游出行APP偏好</div>
                     </div>
-                    <div class="NW_echarts">
+                    <div class="NW_echarts autoShow">
                         <div class="NW_item_btn">
                             <div v-for="(item,index) in travelBtn" :key="index" 
                              :class="{active: index == travelIndex}" 
@@ -29,7 +44,7 @@
                     <div class="NW_item_title">
                         <div class="NW_item_txt">导航APP偏好</div>
                     </div>
-                    <div class="NW_echarts">
+                    <div class="NW_echarts autoShow">
                         <div class="NW_item_btn">
                             <div v-for="(item,index) in travelBtn" :key="index" 
                              :class="{active: index == GPSIndex}" 
@@ -45,7 +60,7 @@
                     <div class="NW_item_title">
                         <div class="NW_item_txt">酒店APP偏好</div>
                     </div>
-                    <div class="NW_echarts">
+                    <div class="NW_echarts autoShow">
                         <div class="NW_item_btn">
                             <div v-for="(item,index) in travelBtn" :key="index" 
                              :class="{active: index == hotelIndex}" 
@@ -59,13 +74,13 @@
                     <div class="NW_item_title">
                         <div class="NW_item_txt">社交网络APP偏好</div>
                     </div>
-                    <div class="NW_echarts" ref="shejiao_echart"></div>
+                    <div class="NW_echarts autoShow" ref="shejiao_echart"></div>
                 </div>
                 <div class="NW_top_right NW_item">
                     <div class="NW_item_title">
                         <div class="NW_item_txt">视频直播APP偏好</div>
                     </div>
-                    <div class="NW_echarts" ref="radio_echarts"></div>
+                    <div class="NW_echarts autoShow" ref="radio_echarts"></div>
                 </div>
             </div>
         </div>
@@ -118,16 +133,30 @@ export default {
             videoName: [],
             videoLocal: [],
             videoNetWork: [],   //视频直播
+            pickerOptions1: {
+                disabledDate: (time) => {
+                    return  time.getTime() > new Date(new Date().getTime()) || time.getTime() < new Date('2019-10-01').getTime();
+                }
+            }
         }
     },
     methods: {
+        choseMonth(data){
+            this.mounthValue = data
+            this.netApp()
+            this.travel()
+            this.getGPS()
+            this.gethotel()
+            this.getShejiao()
+            this.getVideo()
+        },
         // 互联网app指数偏好
         async netApp(){
             this.netWorkEc = this.$echarts.init(this.$refs.netWorkEcharts)
             this.netWorkEc.showLoading({textColor: '#fff',maskColor: 'rgba(255, 255, 255, 0)'})
             
             var res = await this.$http.get(
-                `/internet/findInternetAppIndex?queryTime=2020-01`
+                `/internet/findInternetAppIndex?queryTime=${this.mounthValue}`
             )
             let {data, code} = res.data
             var radarData = []
@@ -164,18 +193,24 @@ export default {
                 },
                 legend: {
                     orient: 'vertical',
-                    left: '60%',
-                    top: '8%',
+                    left: '80%',
+                    bottom: '20%',
                     itemWidth: 8,  // 设置宽度
                     itemHeight: 8,
                     textStyle: {
                         color: '#B2D2E3'
                     },
-                    data: ['某软件', '某主食手机'],
+                    data: ['本地值', '网络值'],
                 },
                 radar: [
                     {
                         indicator: radarData,
+                        name: {
+                            formatter: '{value}',
+                            textStyle: {
+                                color: '#B2D2E3' // 文字颜色
+                            }
+                        },
                         radius: 80
                     }
                 ],
@@ -189,8 +224,8 @@ export default {
                                 value: bendiData,
                                 itemStyle: {
                                     normal: {
-                                        color: "#30B9F1",
-                                        opacity: 0.8,
+                                        color: "rgba(244, 94, 35, 0.8)",
+                                        opacity: 0.2,
                                         
                                     }
                                 },
@@ -200,8 +235,7 @@ export default {
                                 value: quanguoData,
                                 itemStyle: {
                                     normal: {
-                                        color: "#B7464D",
-                                        opacity: 0.8,
+                                        color: "rgba(34, 143, 254, 1)",
                                     }
                                 },
                             }
@@ -235,9 +269,10 @@ export default {
         },
         async travel(){
             var res = await this.$http.get(
-                `/internet/findTravelPerference?queryTime=2020-01`
+                `/internet/findTravelPerference?queryTime=${this.mounthValue}`
             )
             let {data, code} = res.data
+            // console.log(res)
             this.travelName = []
             this.tAppData = []
             this.tPreData = []
@@ -256,11 +291,12 @@ export default {
                     }
                 }
                 if(key == 'installAttri'){
-                    if(data[key].length != 0){
-                        var toptData = data[key].sort(compare('appValue'), false)
+                    if(data[key].listData.length != 0){
+                        var valueTotal = data[key].totalAppValue
+                        var toptData = data[key].listData.sort(compare('appValue'), false)
                         toptData.forEach(item=>{
                             this.installName.push(item.appName)
-                            this.installAppData.push(item.appValue)
+                            this.installAppData.push((Number(item.appValue / valueTotal)*100).toFixed(2))
                         })
                     }
                 }
@@ -294,9 +330,10 @@ export default {
         },
         async getGPS(){
             var res = await this.$http.get(
-                `/internet/findTravelMapPerference?queryTime=2020-01`
+                `/internet/findTravelMapPerference?queryTime=${this.mounthValue}`
             )
             let {data, code} = res.data
+            // console.log(res)
             this.GPSName = []
             this.GPSAppData = []
             this.GPSPreData = []
@@ -315,11 +352,12 @@ export default {
                     }
                 }
                 if(key == 'installAttri'){
-                    if(data[key].length != 0){
-                        var toptData = data[key].sort(compare('appValue'), false)
+                    if(data[key].listData.length != 0){
+                        var valueTotal = data[key].totalAppValue
+                        var toptData = data[key].listData.sort(compare('appValue'), false)
                         toptData.forEach(item=>{
                             this.GPSinstallName.push(item.appName)
-                            this.GPSinstallAppData.push(item.appValue)
+                            this.GPSinstallAppData.push((Number(item.appValue / valueTotal)*100).toFixed(2))
                         })
                     }
                 }
@@ -353,7 +391,7 @@ export default {
         },
         async gethotel(){
             var res = await this.$http.get(
-                `/internet/findTravelHotelPerference?queryTime=2020-01`
+                `/internet/findTravelHotelPerference?queryTime=${this.mounthValue}`
             )
             let {data, code} = res.data
             this.hotelName = []
@@ -374,11 +412,12 @@ export default {
                     }
                 }
                 if(key == 'installAttri'){
-                    if(data[key].length != 0){
-                        var toptData = data[key].sort(compare('appValue'), false)
+                    if(data[key].listData.length != 0){
+                        var valueTotal = data[key].totalAppValue
+                        var toptData = data[key].listData.sort(compare('appValue'), false)
                         toptData.forEach(item=>{
                             this.hotelinstallName.push(item.appName)
-                            this.hotelinstallAppData.push(item.appValue)
+                            this.hotelinstallAppData.push(Number((item.appValue / valueTotal)*100).toFixed(2))
                         })
                     }
                 }
@@ -393,7 +432,7 @@ export default {
         // 社交网络
         async getShejiao(){
             var res = await this.$http.get(
-                `/internet/findSoicalAppPerference?queryTime=2020-01`
+                `/internet/findSoicalAppPerference?queryTime=${this.mounthValue}`
             )
             let {data, code} = res.data
             this.SJlName = []
@@ -413,7 +452,7 @@ export default {
         // 视频直播
         async getVideo(){
             var res = await this.$http.get(
-                `/internet/findLiveVideoPerference?queryTime=2020-01`
+                `/internet/findLiveVideoPerference?queryTime=${this.mounthValue}`
             )
             let {data, code} = res.data
             this.videoName = []
@@ -438,8 +477,9 @@ export default {
             this.travelAppEc = this.$echarts.init(refData)
             var yMax = Math.max(...appData);
             var dataShadow = [];
+            var maxX = yMax+(yMax/6)
             for (var i = 0; i < appData.length; i++) {
-                dataShadow.push(yMax);
+                dataShadow.push(maxX);
             }
             var option = {
                 title:{
@@ -456,12 +496,12 @@ export default {
                     axisPointer: {            // 坐标轴指示器，坐标轴触发有效
                         type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
                     },
-                    formatter:function(data){
-                         return data[0].name+'<br>' + ' APP偏好:' + data[2].value+' <br>'+' 平均水平:'+data[3].value
-                    },
+                    // formatter:function(data){
+                    //      return data[0].name+'<br>' + ' APP偏好:' + data[2].value+' <br>'+' 平均水平:'+data[3].value
+                    // },
                 },
                 legend: {
-                    y: '85%',
+                    y: '88%',
                     icon: 'circle',
                     itemWidth: 10,
                     itemHeight: 10,
@@ -473,12 +513,13 @@ export default {
                     top: '4%',
                     left: '6%',
                     right: '9%',
-                    bottom: '18%',
+                    bottom: '12%',
                     containLabel: true
                 },
                 xAxis: [
                     {
                         type: 'value',
+                        boundaryGap: [0, 0.01],
                         axisLine: {
                             show: false,
                         },
@@ -488,12 +529,13 @@ export default {
                         axisTick: {
                             show: false,
                         },
+                        // max: maxX,
                         axisLabel: {
                             show: true,
                             interval: 0,
                             textStyle: {
                                 color: '#ABCBFF',
-                                fontSize: 14
+                                fontSize: 12
                             },
                         },
                     }
@@ -516,13 +558,13 @@ export default {
                             interval: 0,
                             textStyle: {
                                 color: '#ABCBFF',
-                                fontSize: 14
+                                fontSize: 12
                             },
                         },
                     },
                     {
                         show: true,
-                        inverse: false,
+                        // inverse: false,
                         data: appData,
                         axisLabel: {
                             textStyle: {
@@ -537,39 +579,53 @@ export default {
                             show: false
                         },
                         axisTick: {
-                            show: false
+                            // show: false
                         },
                     }
                 ],
                 series: [
-                    { 
-                        type: 'bar',
-                        itemStyle: {
-                            color: 'rgba(9, 56, 125, 0.5)'
-                        },
-                        barGap: '-100%',
-                        barWidth: 15,
-                        barCategoryGap: '40%',
-                        data: dataShadow,
-                        animation: false
-                    },
-                    { 
-                        type: 'bar',
-                        itemStyle: {
-                            color: 'rgba(9, 56, 125, 0.5)'
-                        },
-                        barWidth: 5,
-                        barGap: '-100%',
-                        barCategoryGap: '40%',
-                        data: dataShadow,
-                        animation: false
-                    },
+                    // { 
+                    //     type: 'bar',
+                    //     itemStyle: {
+                    //         color: 'rgba(9, 56, 125, 0.5)'
+                    //     },
+                    //     barGap: '-100%',
+                    //     barWidth: 15,
+                    //     barCategoryGap: '40%',
+                    //     data: dataShadow,
+                    //     animation: false,
+                    //     showBackground: true,
+                    //     backgroundStyle: {
+                    //         color: '#ff0'
+                    //     }
+                    //     // z:1
+                    // },
+                    // { 
+                    //     type: 'bar',
+                    //     itemStyle: {
+                    //         color: 'rgba(9, 56, 125, 0.5)'
+                    //     },
+                    //     barWidth: 15,
+                    //     barGap: '-100%',
+                    //     barCategoryGap: '40%',
+                    //     data: dataShadow,
+                    //     animation: false,
+                    //     // z:1
+                    // },
                     {
                         name: 'APP偏好',
                         type: 'bar',
-                        barWidth: 15,
+                        barWidth: '40%',
+                        // barWidth: 15,
+                        // barGap:'-10%',//柱图间距
+                        // barGap:'-20%',//柱图间距
                         stack: '广告',
                         data: appData,
+                        showBackground: true,
+                        hoverAnimatio: true,
+                        backgroundStyle: {
+                            color: '#06406E'
+                        },
                         itemStyle: {
                             normal: {
                                 color: new this.$echarts.graphic.LinearGradient(0, 0, 1,0,  [{
@@ -580,29 +636,29 @@ export default {
                                     color: '#00DDFF'
                                 }]),
                             },
-                            emphasis: {
-                                color: new this.$echarts.graphic.LinearGradient(
-                                    0, 0, 0, 1,
-                                    [
-                                        {offset: 0, color: '#2378f7'},
-                                        {offset: 1, color: '#83bff6'}
-                                    ]
-                                )
-                            }
                         },
+                        // z:0
                     },
                     {
                         name: '平均水平',
                         type: 'bar',
+                        barWidth: '15%',
                         barWidth: 5,
+                        // barGap:'10%',//柱图间距
                         stack: '搜索引擎',
                         data: avgData,
+                        hoverAnimatio: true,
+                        showBackground: true,
+                        backgroundStyle: {
+                            color: '#06406E'
+                        },
                         itemStyle: {
                             normal: {
                                 color: '#FAAF1F'
                             },
                             
                         },
+                        // z:0,
                     },
                     
                 ],
@@ -616,6 +672,13 @@ export default {
         appSet(installName, installAppData, refData){
             this.AappSetEc = this.$echarts.init(refData);
             var option = {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {            // 坐标轴指示器，坐标轴触发有效
+                        type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+                    },
+                    // formatter: '{b} <br/> {c}'
+                },
                 title:{
                     show: installAppData.length == 0,//平常时设置为false，隐藏没有数据的文字提示
                     textStyle:{
@@ -724,7 +787,51 @@ function compare(property,desc) {
 }
 </script>
 
-<style>
+<style Scoped>
+    .net_date .el-icon-date:before{
+        background: url('../../assets/hotel/date_icon.png') no-repeat;
+        background-size: 100% 100%;
+        width: 21px;
+        height: 21px;
+        position: absolute;
+        top: 14px;
+        left: 0;
+        margin-right: 2px;
+    }
+    .net_date .el-icon-date:before{
+        content: '';
+    }
+    .net_date .el-date-editor.el-input{
+        width: 130px;
+        cursor: pointer;
+    } 
+    .net_date .el-date-editor.el-input input{
+        background-color: transparent;
+        color: #ABCBFF;
+        cursor: pointer;
+        border: none;
+    }
+    .net_date .el-input__prefix{
+        left: 46px;
+    }
+    .net_date{
+        /* width: 20%; */
+        width: 188px;
+        height: 48px;
+        position: absolute;
+        cursor: pointer;
+        top: 0px;
+        right: 20px;
+        z-index: 999;
+    }
+    .net_date input{
+        width: 188px;
+        height: 48px;
+        text-align: center;
+        color: #ABCBFF;
+        background: url('../../assets/hotel/dateBj.png') no-repeat;
+        background-size: 100% 100%;
+    }
     .netWork{
         width: 100%;
         height: 100%;
@@ -772,7 +879,7 @@ function compare(property,desc) {
         width: 100%;
         height: 20px;
         line-height: 20px;
-        font-size: 18px;
+        font-size: 16px;
         text-align: center;
         color: #CBEAFF;
         position: absolute;
@@ -783,6 +890,8 @@ function compare(property,desc) {
     .NW_echarts{
         width: 100%;
         height: calc(88.2% - 5px);
+    }
+    .NW_echarts.autoShow{
         overflow: hidden;
     }
     .NW_top_left{

@@ -677,6 +677,7 @@ export default {
   border: 1px solid #ccc;
   text-align: center;
   padding: 10px 0;
+  line-height: 20px;
 }
 .basis_edit {
   color: #0095ff;

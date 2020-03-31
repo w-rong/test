@@ -1,5 +1,7 @@
 import Vue from 'vue'
+import axios from 'axios'
 import Router from 'vue-router'
+import aaaaa from '@/components/aaaaa.vue'
 import hotel from '@/components/reception/hotel.vue'
 import passengerFlow from '@/components/reception/passengerFlow/passengerFlow.vue'
 import vehicleTotal from '@/components/reception/vehicleTotal.vue'
@@ -7,7 +9,11 @@ import touristXF from '@/components/reception/touristXF.vue'
 import monitoring from '@/components/reception/monitor.vue'
 import weather from '@/components/reception/weather.vue'
 import basicPortrait from '@/components/reception/basicPortrait.vue'
-import aaaaa from '@/components/aaaaa.vue'
+import customerValue from '@/components/reception/customerValue.vue'
+import netWork from '@/components/reception/netWork.vue'
+//大数据报告
+// import nationalDay from '@/components/reception/nationalDay.vue'
+// import currency from '@/components/reception/currency.vue'
 
 // 基础资源
 import basis_scenic from '@/components/reception/background/basis_message/scenic.vue'
@@ -22,9 +28,41 @@ import basis_shopping from '@/components/reception/background/basis_message/shop
 import basis_travel from '@/components/reception/background/basis_message/travel.vue'
 import basis_play from '@/components/reception/background/basis_message/play.vue'
 import basis_unit from '@/components/reception/background/basis_message/unit.vue'
+import basis_wen_museum from '@/components/reception/background/basis_message/wenMuseum.vue'
+import basis_sceCountry from '@/components/reception/background/basis_message/sceCountry.vue'
+import basis_ship from '@/components/reception/background/basis_message/ship.vue'
+import basis_culturalExample from '@/components/reception/background/basis_message/culturalExample.vue'
+import basis_culturalExecute from '@/components/reception/background/basis_message/culturalExecute.vue'
+import basis_culturalManage from '@/components/reception/background/basis_message/culturalManage.vue'
+import basis_culturalProtect from '@/components/reception/background/basis_message/culturalProtect.vue'
+import basis_culturalProtectScience from '@/components/reception/background/basis_message/culturalProtectScience.vue'
+import basis_culturalScience from '@/components/reception/background/basis_message/culturalScience.vue'
+import basis_culturalStation from '@/components/reception/background/basis_message/culturalStation.vue'
+import basis_eduOrgan from '@/components/reception/background/basis_message/eduOrgan.vue'
+import basis_groupBuy from '@/components/reception/background/basis_message/groupBuy.vue'
+import basis_guide from '@/components/reception/background/basis_message/guide.vue'
+import basis_heritageAuction from '@/components/reception/background/basis_message/heritageAuction.vue'
+import basis_heritageShop from '@/components/reception/background/basis_message/heritageShop.vue'
+import basis_humanity from '@/components/reception/background/basis_message/humanity.vue'
+import basis_industry from '@/components/reception/background/basis_message/industry.vue'
+import basis_internetBar from '@/components/reception/background/basis_message/internetBar.vue'
+import basis_otherHeritage from '@/components/reception/background/basis_message/otherHeritage.vue'
+import basis_performVenue from '@/components/reception/background/basis_message/performVenue.vue'
+import basis_redTravel from '@/components/reception/background/basis_message/redTravel.vue'
+import basis_showBroker from '@/components/reception/background/basis_message/showBroker.vue'
+import basis_specialFood from '@/components/reception/background/basis_message/specialFood.vue'
+import basis_specialty from '@/components/reception/background/basis_message/specialty.vue'
+import basis_toilet from '@/components/reception/background/basis_message/toilet.vue'
+import basis_unheritageCenter from '@/components/reception/background/basis_message/unheritageCenter.vue'
+import basis_unpubStation from '@/components/reception/background/basis_message/unpubStation.vue'
+import basis_unpubPerform from '@/components/reception/background/basis_message/unpubPerform.vue'
+import basis_village from '@/components/reception/background/basis_message/village.vue'
+import basis_public from '@/components/reception/background/basis_message/public.vue'
 // 应急事件管理
 import meet_index from '@/components/reception/background/emergency_events/index.vue'
 import meet_thing from '@/components/reception/background/emergency_events/meetThing.vue'
+import plan_handle from '@/components/reception/background/emergency_events/planHandle.vue'
+import person_handle from '@/components/reception/background/emergency_events/personHandle.vue'
 import meet_plan from '@/components/reception/background/emergency_events/meetPlan.vue'
 import meet_emergencyThing from '@/components/reception/background/emergency_events/emergencyThing.vue'
 // 应急资源管理
@@ -45,11 +83,45 @@ import wordMouth from '@/components/word_mouth_monitoring/word_mouth_monitoring'
 // GIS一张图
 import gis from '@/components/GIS/GIS.vue'
 
+// 资源管理
+import ResourceDirectory from '../components/ResourceDirectory/ResourceDirectory'
+import tableList from '../components/tableList.vue'
+// 大数据报告
+import reportAccount from '../components/presentation/presentation.vue'
+import home from '@/components/reception/userManagement/home.vue'
+import user from '@/components/reception/userManagement/user.vue'
+import role from '@/components/reception/userManagement/role.vue'
+import juris from '@/components/reception/userManagement/juris.vue'
+
+
 
 Vue.use(Router)
 
-export default new Router({
+
+let router = new Router({
   routes: [
+    {
+      path: '/home',
+      name: 'home',
+      component: home,
+      children: [
+        {
+          path: 'user',
+          name: 'user',
+          component: user
+        },
+        {
+          path: 'role',
+          name: 'role',
+          component: role
+        },
+        {
+          path: 'juris',
+          name: 'juris',
+          component: juris
+        }
+      ]
+    },
     {
       path: '/index',
       name: 'aaaaa',
@@ -74,11 +146,20 @@ export default new Router({
       path: '/touristXF',
       name: 'touristXF',
       component: touristXF
+    }, {
+      path: '/customerValue',
+      name: 'customerValue',
+      component: customerValue
     },
     {
       path: '/monitor',
       name: 'monitor',
       component: monitoring
+    },
+    {
+      path: '/netWork',
+      name: 'netWork',
+      component: netWork
     },
     {
       path: '/weather',
@@ -90,6 +171,18 @@ export default new Router({
       name: 'basicPortrait',
       component: basicPortrait
     },
+    //报告
+    // {
+    //   path: '/nationalDay',
+    //   name: 'nationalDay',
+    //   component: nationalDay
+    // },
+    // {
+    //   path: '/currency',
+    //   name: 'currency',
+    //   component: currency
+    // },
+
     {
       path: '/',
       name: 'login',
@@ -171,6 +264,12 @@ export default new Router({
       name: 'basisTravel',
       component: basis_travel
     },
+    // 公共服务
+    {
+      path: '/basisPublic',
+      name: 'basisPublic',
+      component: basis_public
+    },
     // 购物场所
     {
       path: '/basisShopping',
@@ -189,6 +288,157 @@ export default new Router({
       name: 'basisUnit',
       component: basis_unit
     },
+    // 文博物馆
+    {
+      path: '/basisWenMuseum',
+      name: 'basisWenMuseum',
+      component: basis_wen_museum
+    },
+    // 景区村管理
+    {
+      path: '/basisSceCountry',
+      name: 'basisSceCountry',
+      component: basis_sceCountry
+    },
+    // 船流分析
+    {
+      path: '/basisShip',
+      name: 'basisShip',
+      component: basis_ship
+    },
+
+    // 其他
+    {
+      path: '/basisCulturalExample',
+      name: 'basisCulturalExample',
+      component: basis_culturalExample
+    },
+    {
+      path: '/basisCulturalExecute',
+      name: 'basisCulturalExecute',
+      component: basis_culturalExecute
+    },
+    {
+      path: '/basisCulturalManage',
+      name: 'basisCulturalManage',
+      component: basis_culturalManage
+    },
+    {
+      path: '/basisCulturalProtect',
+      name: 'basisCulturalProtect',
+      component: basis_culturalProtect
+    },
+    {
+      path: '/basisCulturalProtectScience',
+      name: 'basisCulturalProtectScience',
+      component: basis_culturalProtectScience
+    },
+    {
+      path: '/basisCulturalScience',
+      name: 'basisCulturalScience',
+      component: basis_culturalScience
+    },
+    {
+      path: '/basisCulturalStation',
+      name: 'basisCulturalStation',
+      component: basis_culturalStation
+    },
+    {
+      path: '/basisEduOrgan',
+      name: 'basisEduOrgan',
+      component: basis_eduOrgan
+    },
+    {
+      path: '/basisGroupBuy',
+      name: 'basisGroupBuy',
+      component: basis_groupBuy
+    },
+    {
+      path: '/basisGuide',
+      name: 'basisGuide',
+      component: basis_guide
+    },
+    {
+      path: '/basisHeritageAuction',
+      name: 'basisHeritageAuction',
+      component: basis_heritageAuction
+    },
+    {
+      path: '/basisHeritageShop',
+      name: 'basisHeritageShop',
+      component: basis_heritageShop
+    },
+    {
+      path: '/basisHumanity',
+      name: 'basisHumanity',
+      component: basis_humanity
+    },
+    {
+      path: '/basisIndustry',
+      name: 'basisIndustry',
+      component: basis_industry
+    },
+    {
+      path: '/basisInternetBar',
+      name: 'basisInternetBar',
+      component: basis_internetBar
+    },
+    {
+      path: '/basisOtherHeritage',
+      name: 'basisOtherHeritage',
+      component: basis_otherHeritage
+    },
+    {
+      path: '/basisPerformVenue',
+      name: 'basisPerformVenue',
+      component: basis_performVenue
+    },
+    {
+      path: '/basisRedTravel',
+      name: 'basisRedTravel',
+      component: basis_redTravel
+    },
+    {
+      path: '/basisShowBroker',
+      name: 'basisShowBroker',
+      component: basis_showBroker
+    },
+    {
+      path: '/basisSpecialFood',
+      name: 'basisSpecialFood',
+      component: basis_specialFood
+    },
+    {
+      path: '/basisSpecialty',
+      name: 'basisSpecialty',
+      component: basis_specialty
+    },
+    {
+      path: '/basisToilet',
+      name: 'basisToilet',
+      component: basis_toilet
+    },
+    {
+      path: '/basisUnheritageCenter',
+      name: 'basisUnheritageCenter',
+      component: basis_unheritageCenter
+    },
+    {
+      path: '/basisUnpubPerform',
+      name: 'basisUnpubPerform',
+      component: basis_unpubPerform
+    },
+    {
+      path: '/basisUnpubStation',
+      name: 'basisUnpubStation',
+      component: basis_unpubStation
+    },
+    {
+      path: '/basisVillage',
+      name: 'basisVillage',
+      component: basis_village
+    },
+    
     // 应急事件管理
     // 应急事件
     {
@@ -201,6 +451,16 @@ export default new Router({
       path: '/meetIndex',
       name: 'meetIndex',
       component: meet_index
+    },
+    {
+      path: '/planHandle',
+      name: 'planHandle',
+      component: plan_handle
+    },
+    {
+      path: '/personHandle',
+      name: 'personHandle',
+      component: person_handle
     },
     // 应急预案
     {
@@ -238,24 +498,61 @@ export default new Router({
       path: '/meetAddressBook',
       name: 'meetAddressBook',
       component: meet_address_book
-    }, 
+    },
     // 监控设置
     // 景区监控设置
     {
       path: '/scenicMon',
       name: 'scenicMon',
       component: scenicMon
-    }, 
+    },
     // 监控点位设置
     {
       path: '/monitoring',
       name: 'monitoring',
       component: monitor
-    }, 
+    },
     {
       path: '/test',
       name: 'test',
       component: test
     },
+    // 资源管理
+    {
+      path: '/ResourceDirectory',
+      name: 'ResourceDirectory',
+      component: ResourceDirectory
+    },
+    {
+      path: '/tableList',
+      name: 'tableList',
+      component: tableList
+    },
+    // 大数据报告
+    {
+      path: '/reportAccount',
+      name: 'reportAccount',
+      component: reportAccount
+    },
   ]
 })
+
+
+router.beforeEach((to, from, next) => {
+  // 当请求 login 时不应该验证
+  if (to.path !== '/') {
+    // 验证 Localstorage 中是否存在 token
+    var token = window.localStorage.getItem('Authorization')
+    next()
+    // if (!token) {
+    //   // 跳转到登录页面
+    //   // router.push('/')
+    //   // Message.error('您还没有登录，请登录')
+    // } else {
+    //   next()
+    // }
+  } else {
+    next()
+  }
+})
+export default router

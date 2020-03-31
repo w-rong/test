@@ -13,11 +13,11 @@
             <tr class="emergency_person_content_right_content_table_title">
               <td>人员姓名</td>
               <td>性别</td>
-              <td>部门</td>
+              <!-- <td>部门</td> -->
               <td>职位</td>
-              <td>岗位</td>
+              <!-- <td>岗位</td> -->
               <td>办公电话</td>
-              <td>手机</td>
+              <!-- <td>手机</td> -->
               <td>邮箱</td>
               <td>虚拟号</td>
               <td>操作</td>
@@ -28,11 +28,11 @@
             <tr v-for="(item, index) in personList" :key="index">
               <td style="width:8%">{{item.name}}</td>
               <td style="width:6%">{{item.sex | sex}}</td>
-              <td style="width:10%">{{item.department}}</td>
+              <!-- <td style="width:10%">{{item.department}}</td> -->
               <td style="width:10%">{{item.position}}</td>
-              <td style="width:10%">{{item.station}}</td>
+              <!-- <td style="width:10%">{{item.station}}</td> -->
               <td style="width:10%">{{item.telephone}}</td>
-              <td style="width:10%">{{item.phone}}</td>
+              <!-- <td style="width:10%">{{item.phone}}</td> -->
               <td style="width:10%">{{item.email}}</td>
               <td style="width:10%">{{item.vphone}}</td>
               <td style="width:12%">
@@ -88,7 +88,7 @@
               </el-col> -->
               <el-col :span="22">
                 <el-col :span="12">
-                  <el-form-item label="应急机构">
+                  <el-form-item label="应急机构" prop="org">
                     <el-input v-model="ruleForm.org"></el-input>
                   </el-form-item>
                 </el-col>
@@ -98,22 +98,21 @@
               </el-col>
               <el-col :span="22">
                 <el-col :span="12">
-                  <el-form-item label="职位">
+                  <el-form-item label="职位" prop="position">
                     <el-input v-model="ruleForm.position"></el-input>
                   </el-form-item>
                 </el-col>
-                <el-col :span="12">
+                <!-- <el-col :span="12">
                   <el-form-item label="岗位">
                     <el-input v-model="ruleForm.station"></el-input>
                   </el-form-item>
-                </el-col>
+                </el-col> -->
               </el-col>
               <el-col :span="22">
                 <el-col :span="12">
                   <el-form-item
                     label="办公电话"
                     prop="telephone"
-                    :rules="[  {validator:nameRule1, trigger:'blur', message: '只能是数字'}]"
                   >
                     <el-input
                       v-model="ruleForm.telephone"
@@ -121,7 +120,7 @@
                     ></el-input>
                   </el-form-item>
                 </el-col>
-                <el-col :span="12">
+                <!-- <el-col :span="12">
                   <el-form-item label="手机" prop="phone">
                     <el-input
                       v-model="ruleForm.phone"
@@ -129,7 +128,7 @@
                       onkeyup="this.value=this.value.replace(/[^\d.]/g,'');"
                     ></el-input>
                   </el-form-item>
-                </el-col>
+                </el-col> -->
               </el-col>
               <el-col :span="22">
                 <el-col :span="12">
@@ -195,22 +194,31 @@
               </el-col>-->
               <el-col :span="22">
                 <el-col :span="12">
+                  <el-form-item label="应急机构" prop="org">
+                    <el-input v-model="ruleFormChange.org"></el-input>
+                  </el-form-item>
+                </el-col>
+                <el-col :span="6" style="margin-left:10px">
+                  <el-button type="primary" plain size="small" @click="addOrg()">选择应急机构</el-button>
+                </el-col>
+              </el-col>
+              <el-col :span="22">
+                <el-col :span="12">
                   <el-form-item label="职位">
                     <el-input v-model="ruleFormChange.position"></el-input>
                   </el-form-item>
                 </el-col>
-                <el-col :span="12">
+                <!-- <el-col :span="12">
                   <el-form-item label="岗位">
                     <el-input v-model="ruleFormChange.station"></el-input>
                   </el-form-item>
-                </el-col>
+                </el-col> -->
               </el-col>
               <el-col :span="22">
                 <el-col :span="12">
                   <el-form-item
                     label="办公电话"
                     prop="telephone"
-                    :rules="[  {validator:nameRule1, trigger:'blur', message: '只能是数字'}]"
                   >
                     <el-input
                       v-model="ruleFormChange.telephone"
@@ -218,7 +226,7 @@
                     ></el-input>
                   </el-form-item>
                 </el-col>
-                <el-col :span="12">
+                <!-- <el-col :span="12">
                   <el-form-item label="手机" prop="phone">
                     <el-input
                       v-model="ruleFormChange.phone"
@@ -226,7 +234,7 @@
                       onkeyup="this.value=this.value.replace(/[^\d.]/g,'');"
                     ></el-input>
                   </el-form-item>
-                </el-col>
+                </el-col> -->
               </el-col>
               <el-col :span="22">
                 <el-col :span="12">
@@ -332,8 +340,10 @@ export default {
       peopleName: "",
       editId: "",
       orgId: "",
+      orgFindId:"",
       orgInfo: "",
       orgList: [],
+      orgName:"",
       personList: [],
       editPersonList: [],
       creatTime: "",
@@ -349,16 +359,18 @@ export default {
         vphone: "",
         org: ""
       },
-      dialogRules: {
-        telephone: [
-          { required: true, message: "请输入原因", trigger: "blur" },
-          { min: 2, message: "请输入不少于2个字符", trigger: "blur" },
-          { message: "只能输入数字" }
-        ]
-      },
+      // dialogRules: {
+      //   telephone: [
+      //     { required: true, message: "请输入原因", trigger: "blur" },
+      //     { min: 2, message: "请输入不少于2个字符", trigger: "blur" },
+      //     { message: "只能输入数字" }
+      //   ]
+      // },
       rules: {
         name: [{ required: true, message: "请输入人员名称", trigger: "blur" }],
-        phone: [{ required: true, message: "请输入手机号码", trigger: "blur" }],
+        telephone: [{ required: true, message: "请输入电话号码", trigger: "blur" }],
+        org: [{ required: true, message: "请选择应急机构", trigger: "blur" }],
+        position: [{ required: true, message: "请输入职位", trigger: "blur" }],
         sex: [{ required: true, message: "请选择人员性别", trigger: "change" }]
       },
       ruleFormChange: {
@@ -375,7 +387,9 @@ export default {
       },
       rulesChange: {
         name: [{ required: true, message: "请输入人员名称", trigger: "blur" }],
-        phone: [{ required: true, message: "请输入手机号码", trigger: "blur" }],
+        telephone: [{ required: true, message: "请输入电话号码", trigger: "blur" }],
+        org: [{ required: true, message: "请选择应急机构", trigger: "blur" }],
+        position: [{ required: true, message: "请输入职位", trigger: "blur" }],
         sex: [{ required: true, message: "请选择人员性别", trigger: "change" }]
       }
     };
@@ -422,7 +436,7 @@ export default {
     // 获取机构列表
     async getOrgList() {
       let res = await this.$http.get(
-        `/emer/listEmergencyOrgan?pagNumber=${this.currentPage1}&pagSize=${this.pageSize}`
+        `/emer/listEmergencyOrganByGroupByName?pagNumber=${this.currentPage1}&pagSize=${this.pageSize}`
       );
       console.log(res);
       if (res.data.msg == "success") {
@@ -436,7 +450,7 @@ export default {
     },
     // 选择应急机构
     chooseOrg() {
-      this.orgId = this.orgInfo.id;
+      this.orgId = this.orgInfo.organId;
       // console.log(this.orgId);
       // console.log(this.orgInfo);
       // console.log(this.orgInfo.organId);
@@ -455,7 +469,7 @@ export default {
           position: this.ruleForm.position,
           station: this.ruleForm.station,
           telephone: this.ruleForm.telephone,
-          phone: this.ruleForm.phone,
+          // phone: this.ruleForm.phone,
           email: this.ruleForm.email,
           vphone: this.ruleForm.vphone,
           originId: this.orgId
@@ -491,7 +505,9 @@ export default {
         this.ruleFormChange.email = this.editPersonList.email;
         this.ruleFormChange.vphone = this.editPersonList.vphone;
         this.orgId = this.editPersonList.originId;
-        console.log(this.editPersonList);
+        // console.log(this.editPersonList);
+        // console.log(this.editPersonList.telephone);
+        this.getOrgName();
       }
     },
     // 编辑人员列表
@@ -506,13 +522,13 @@ export default {
           position: this.ruleFormChange.position,
           station: this.ruleFormChange.station,
           telephone: this.ruleFormChange.telephone,
-          phone: this.ruleFormChange.phone,
+          // phone: this.ruleFormChange.phone,
           email: this.ruleFormChange.email,
           vphone: this.ruleFormChange.vphone,
           originId: this.orgId
         })
       );
-      console.log(res);
+      // console.log(res);
       if (res.data.msg == "success") {
         this.isedited = false;
         this.getPersonList();
@@ -525,11 +541,19 @@ export default {
         this.$message.error(res.data.msg);
       }
     },
+    // 获取机构名称
+    async getOrgName(){
+      let res = await this.$http.get(`/emer/getEmergencyOrganById?id=${this.orgId}`)
+      if (res.data.msg == 'success') {
+        this.orgName = res.data.data.organName
+        this.ruleFormChange.org = this.orgName
+      }
+    },
     // 删除人员列表
     async delPersonList(id) {
       console.log(id);
       let res = await this.$http.delete(`/emer/deleteEmergencyPeople?id=${id}`);
-      console.log(res);
+      // console.log(res);
       if (res.data.msg == "success") {
         this.getPersonList();
         this.$message({
@@ -626,12 +650,13 @@ export default {
 <style>
 .emergency_person_all_content {
   width: 100%;
-  /* height: 100%; */
+  height: 100%;
   background-color: #f4f4f4;
 }
 .emergency_person_content {
   margin-left: calc(210px);
-  height: 1080px;
+  height: calc(100% - 50px);
+  overflow-y:auto ;
   background-color: #fff;
   position: relative;
 }
@@ -695,6 +720,7 @@ export default {
   border: 1px solid #ccc;
   text-align: center;
   padding: 10px 0;
+  line-height: 20px;
 }
 .basis_edit {
   color: #0095ff;

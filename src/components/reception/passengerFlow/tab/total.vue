@@ -2,15 +2,15 @@
     <div class="total_page">
         <div class="total_date">
             <div class="total_date1">
+                
                 <el-date-picker
-                    popper-class="down_date"
-                    :clearable="false"
-                    clear-icon="clearIcon"
                     v-model="beginValue"
+                    type="date"
                     value-format="yyyy-MM-dd"
                     @change="beginChange"
-                    type="date"
-                    placeholder="选择日期">
+                    popper-class="down_date"
+                    :clearable="false"
+                    :picker-options="pickerOptions0">
                 </el-date-picker>
                 <div class="total_date1_down"></div>
             </div>
@@ -23,9 +23,9 @@
                     v-model="endValue"
                     ref="focesInput"
                     @change="endChange"
+                    :picker-options="pickerOptions1"
                     value-format="yyyy-MM-dd"
-                    type="date"
-                    placeholder="选择日期">
+                    type="date">
                 </el-date-picker>
                 <div class="total_date1_down"></div>
             </div>
@@ -37,11 +37,30 @@
 <script>
 import moment from "moment"
 export default {
+    watch:{
+        beginValue(newval, oldval){
+            console.log(newval , oldval)
+        }
+    },
     data(){
         return {
             beginValue: moment(new Date(new Date().getTime() - 7 * 24 * 3600 * 1000)).format('YYYY-MM-DD'),
             endValue: moment(new Date(new Date().getTime() - 1 * 24 * 3600 * 1000)).format('YYYY-MM-DD'),
-            totalEc: null
+            totalEc: null,
+            pickerOptions0: {
+                disabledDate: (time) => {
+                    // if (this.beginValue != "") {
+                        // return time.getTime() > new Date(new Date().getTime() - 7 * 24 * 3600 * 1000) && time.getTime() > new Date(new Date().getTime() - 1 * 24 * 3600 * 1000);
+                    // } else {
+                        return time.getTime() > new Date(new Date().getTime() - 1 * 24 * 3600 * 1000);
+                    // }
+                }
+            },
+            pickerOptions1: {
+                disabledDate: (time) => {
+                    return time.getTime() <  new Date(this.beginValue).getTime() || time.getTime() > new Date(new Date().getTime() - 1 * 24 * 3600 * 1000)
+                }
+            }
         }
     },
     methods: {
@@ -53,6 +72,7 @@ export default {
                 `/scenic/getScenicVolumeStatistics?startTime=${this.beginValue}&endTime=${this.endValue}`
             )
             let {data, code} = res.data
+            console.log(res)
             var dataAxis = [];
             var scenicData = [];
             var sortData = data.sort(compare("passengerNum",true))
@@ -62,7 +82,7 @@ export default {
                     scenicData.push(item.passengerNum)
                 });
             }
-            var yMax = Math.max(...scenicData) + 100;
+            var yMax = Math.max(...scenicData) + 1000;
             var dataShadow = [];
 
             for (var i = 0; i < scenicData.length; i++) {
@@ -123,7 +143,7 @@ export default {
                         top: '10%',
                         left: '15%',
                         bottom: '10%',
-                        right: '5%',
+                        right: '15%',
                     }
                 ],
                 yAxis: {
@@ -202,10 +222,13 @@ export default {
             window.addEventListener('resize', this.resizeHandler)
         },
         beginChange(data){
+            console.log(data)
             this.beginValue = data
-            this.$refs.focesInput.focus();
+            this.totalEchartFn()
+            // this.$refs.focesInput.focus();
         },
         endChange(data){
+            console.log(data)
             this.endValue = data
             this.totalEchartFn()
         },
@@ -214,6 +237,15 @@ export default {
         }
     },
     mounted(){
+        // console.log(this.beginValue)
+        // console.log(this.endValue)
+        // console.log(new Date(this.endValue).getMonth()+1)
+        // var beginTime = new Date(this.beginValue).getFullYear()+'-'+new Date(this.beginValue).getMonth()+1 +'-'+new Date(this.beginValue).getDate()
+        // var endTime = new Date(this.endValue).getFullYear()+'-'+new Date(this.endValue).getMonth()+1 +'-'+new Date(this.endValue).getDate()
+        // var beginTime =  moment(new Date(new Date().getTime() - 7 * 24 * 3600 * 1000)).format('YYYY-MM-DD')
+        // var endTime  =  moment(new Date(new Date().getTime() - 1 * 24 * 3600 * 1000)).format('YYYY-MM-DD')
+        // console.log(beginTime)
+     
         this.totalEchartFn()
     }
 }
@@ -240,14 +272,21 @@ function compare(property,desc) {
 }
 </script>
 
-<style>
+<style Scoped>
     .wh100{
         width: 100%;
         height: 100%;
     }
+    .el-date-editor.el-input.el-input--prefix.el-input--suffix.el-date-editor--month input{
+        color: #fff;
+    }
     /*  */
     .clearIcon{
         content: '';
+    }
+    .el-picker-panel.down_date .el-date-table td.disabled div{
+        background-color: #072342;
+        color: #999;
     }
     .total_page .el-date-editor.el-input, .el-date-editor.el-input__inner{
         width: 100%;
@@ -279,7 +318,7 @@ function compare(property,desc) {
         display: flex;
     }
     .total_container{
-        width: 70%;
+        width: 76%;
         flex: 1;
         margin: 0 auto;
         display: flex;

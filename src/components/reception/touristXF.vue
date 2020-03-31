@@ -3,37 +3,23 @@
         <div class="XF_title">
             <headtop :title='pageTitle'/>
             <!-- <div class="XF_title_txt">旅游消费分析</div> -->
+            <div class="XF_date">
+                <el-date-picker
+                    popper-class="down_date"
+                    :clearable="false"
+                    :editable="false"
+                    clear-icon="clearIcon"
+                    v-model="mounthValue"
+                    value-format="yyyy-MM"
+                    type="month"
+                    @change="choseMonth"
+                    :picker-options="pickerOptions1"
+                    placeholder="选择日期">
+                </el-date-picker>
+            </div>
         </div>
         <div class="XF_container">
-            <div class="XF_date">
-                <div class="XF_date1">
-                    <el-date-picker
-                        popper-class="down_date"
-                        :clearable="false"
-                        clear-icon="clearIcon"
-                        v-model="beginValue"
-                        @change="beginChange"
-                        value-format="yyyy-MM-dd"
-                        type="date"
-                        placeholder="选择日期">
-                    </el-date-picker>
-                    <div class="XF_date1_down"></div>
-                </div>
-                <div class="XF_date2">
-                    <el-date-picker
-                        popper-class="down_date"
-                        :clearable="false"
-                        clear-icon="clearIcon"
-                        v-model="endValue"
-                        ref="focesInput"
-                        @change="endChange"
-                        value-format="yyyy-MM-dd"
-                        type="date"
-                        placeholder="选择日期">
-                    </el-date-picker>
-                    <div class="XF_date1_down"></div>
-                </div>
-            </div>
+                
             <div class="XF_container_top">
                 <!-- 游客画像 -->
                 <div class="XF_container_left">
@@ -43,30 +29,68 @@
                     <div class="XF_portrait_container">
                         <div class="XF_portrait">
                             <div class="XF_portraitkDetail">
-                                一周旅游总人数 <span>{{allTourist}}</span>人&nbsp;&nbsp;&nbsp;&nbsp;
-                                平均年龄 <span>{{avgTourist}}</span>岁
+                                当月旅游总人数 <span>{{allTourist}}</span>人&nbsp;&nbsp;&nbsp;&nbsp;
+                                平均年龄 <span>{{Number(avgTourist).toFixed(0)}}</span>岁
                             </div>
                         </div>
                         <div class="portraitEc">
                             <div class="XF_portrait_top">
-                                <div class="XF_portrait_gender">
+                                <div class="XF_portrait_gender gender">
                                     <div class="XF_portrait_gender_nan">
                                         <div class="XF_portrait_gender_nan_img"><img src="../../assets/hotel/man.png" alt=""></div>
-                                        <div class="XF_portrait_gender_nan_txt">{{Number(male).toFixed(2)}}%</div>
+                                        <div class="XF_portrait_gender_nan_txt">{{Number(Number(male)*100).toFixed(2)}}%</div>
                                     </div>
-                                    <div class="XF_portrait_gender_ec" ref="genderEcharts"></div>
+                                    <div class="XF_portrait_gender_ec" v-if="inResize">
+                                        <svg :width="genderR * 2 + 10" :height="genderR * 2 + 10" version="1.1"  class="pie"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                            <circle :cx="genderWidth" :cy="genderWidth" :r="genderR - 5" stroke="#08b0ff" class="ring manchart">
+                                                <animate attributeName="stroke-dashoffset" :to="-getVal(male, 251)" dur="1s" fill="freeze"></animate>
+                                            </circle>
+                                            <circle :cx="genderWidth" :cy="genderWidth" :r="genderR * 0.7" stroke="rgba(0,87,168,0.1)" class="ring"></circle>
+                                            <circle :cx="genderWidth" :cy="genderWidth" :r="genderR * 0.7" stroke="#ff78ba" class="ring womanchart">
+                                                <animate attributeName="stroke-dashoffset" :to="getVal(female, 198)" dur="1s" fill="freeze"></animate>
+                                            </circle>
+                                            <circle :cx="genderWidth" :cy="genderWidth" :r="genderR" stroke="rgba(0,87,168,0.5)" fill="none" stroke-width="1"></circle>
+                                            <circle :cx="genderWidth" :cy="genderWidth" :r="genderR * 0.75" stroke="rgba(0,87,168,0.5)" fill="none" stroke-width="1"></circle>
+                                            <circle :cx="genderWidth" :cy="genderWidth" r="2" fill="#0057A8"></circle>
+                                            <line :x1="genderWidth" :y1="genderWidth" :x2="genderWidth" y2="0" stroke="#0057A8"></line>
+                                            <line :x1="genderWidth" :y1="genderWidth" :x2="endPoint[0]" :y2="endPoint[1]" stroke="#0057A8" class="endline"></line>
+                                        </svg>
+                                    </div>
                                     <div class="XF_portrait_gender_nv">
                                         <div class="XF_portrait_gender_nan_img"><img src="../../assets/hotel/woman.png" alt=""></div>
-                                        <div class="XF_portrait_gender_nv_txt">{{Number(female).toFixed(2)}}%</div>
+                                        <div class="XF_portrait_gender_nv_txt">{{Number(Number(female)*100).toFixed(2)}}%</div>
                                     </div>
                                 </div>
                                 <div class="XF_portrait_age" ref="ageEcharts">c</div>
                             </div>
-                            <div class="XF_portrait_bottom">
-                                <div class="XF_portrait_bottom_ec" ref="XF_portrait_bottom_ec1"></div>
+                            <div class="XF_portrait_bottom ider">
+                                <ul v-if="inResize">
+                                    <li v-for="(i, idx) in list" :key="idx">
+                                        <div class="XF_portrait_bottom_text">{{i.name}}</div>
+                                        <!-- <label>{{i.name}}</label> -->
+                                        <img src="@/assets/img/portrait/chartbg@2x.png" alt="">
+                                        <svg width="106" height="106" version="1.1"  class="pie"
+                                                xmlns="http://www.w3.org/2000/svg">
+                                            <defs>
+                                                <linearGradient id="linear" x1="0%" y1="0%" x2="100%" y2="0%"> 
+                                                    <stop offset="0%" stop-color="#92cbfe"/> 
+                                                    <stop offset="100%" stop-color="#2382f7"/> 
+                                                </linearGradient>
+                                            </defs>
+                                            <circle cx="53" cy="53" r="28" stroke="url(#linear)">
+                                                <animate attributeName="stroke-dashoffset" :to="getVal(i.value, 175)" dur="1s" fill="freeze"></animate>
+                                            </circle>
+                                        </svg>
+                                        <p>
+                                            <b>{{i.value * 100 | fixed}}</b>%
+                                        </p>
+                                    </li>
+                                </ul>
+                                <!-- <div class="XF_portrait_bottom_ec" ref="XF_portrait_bottom_ec1"></div>
                                 <div class="XF_portrait_bottom_ec" ref="XF_portrait_bottom_ec2"></div>
                                 <div class="XF_portrait_bottom_ec" ref="XF_portrait_bottom_ec3"></div>
-                                <div class="XF_portrait_bottom_ec" ref="XF_portrait_bottom_ec4"></div>
+                                <div class="XF_portrait_bottom_ec" ref="XF_portrait_bottom_ec4"></div> -->
                             </div>
                         </div>
                     </div>
@@ -104,13 +128,15 @@
                 </div>
             </div>
             <div class="XF_container_bottom">
-                <div class="tourist_total_title"></div>
+                <div class="tourist_total_title">
+                    <div class="XF_portrait_title_txt">游客消费统计</div>
+                </div>
                 <div class="tourist_total_container">
                     <div class="tourist_total_1">
                         <div class="tourist_total_1_title">景点消费分析</div>
                         <div class="tourist_total_1_detial">
                             景点人均消费 <span>{{Number(scenicAvg).toFixed(2)}}</span>元&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            较上个周期增长<span>1%</span>
+                            较上个周期增长<span>{{scenicZZ}}%</span>
                         </div>
                         <div class="tourist_total_1_echart" ref="touristEcharts1"></div>
                     </div>
@@ -118,7 +144,7 @@
                         <div class="tourist_total_1_title">餐馆消费分析</div>
                         <div class="tourist_total_1_detial">
                             人均消费 <span>{{Number(cateringAvg).toFixed(2)}}</span>元&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            较上个周期增长<span>1%</span>
+                            较上个周期增长<span>{{foodZZ}}%</span>
                         </div>
                         <div class="tourist_total_1_echart" ref="touristEcharts2"></div>
                     </div>
@@ -126,7 +152,7 @@
                         <div class="tourist_total_1_title">酒店消费分析</div>
                         <div class="tourist_total_1_detial">
                             人均消费 <span>{{Number(hotelAvg).toFixed(2)}}</span>元&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                            较上个周期增长<span>2%</span>
+                            较上个周期增长<span>{{hotelZZ}}%</span>
                         </div>
                         <div class="tourist_total_1_echart" ref="touristEcharts3"></div>
                     </div>
@@ -142,12 +168,44 @@ import aa from '@/assets/xf_bj.json'
 import bb from '@/assets/xf_scenicbj.json'
 import qs from 'qs'
 import moment from "moment"
+const genderR = 45
+
+function angle (an) {
+    let r = 51
+    let angle = Math.PI / 180 * an;
+    let y = genderR + 5 +r*Math.sin(angle)
+    let x = genderR + 5 +r*Math.cos(angle)
+
+    return [x, y]
+}
+
 export default {
     components: {
         headtop
     },
     data(){
         return {
+            mounthValue: moment(new Date()).format('YYYY-MM'),
+            inResize: true,
+            list: [
+                {
+                    value: 0,
+                    name: '已婚'
+                },
+                {
+                    value: 0,
+                    name: '携子'
+                },
+                {
+                    value: 0,
+                    name: '旅游达人'
+                },
+                // {
+                //     value: 0,
+                //     name: '重游率'
+                // }
+            ],
+            genderR: genderR,
             female: 0,
             male: 0,
             totalXF: 0,
@@ -158,8 +216,8 @@ export default {
             hotelAvg: 0,
             scenicAvg: 0,
             pageTitle: '旅游消费分析',
-            beginValue: moment(new Date(new Date().getTime() - 7 * 24 * 3600 * 1000)).format('YYYY-MM-DD'),
-            endValue: moment(new Date(new Date().getTime() - 1 * 24 * 3600 * 1000)).format('YYYY-MM-DD'),
+            beginValue: moment(new Date()).startOf('month').format("YYYY-MM-DD"),
+            endValue: moment(new Date()).endOf('month').format("YYYY-MM-DD"),
             cityIndex1: 0,
             cityTab: ['城市', '省份'],
             aweakEc: null,
@@ -167,7 +225,7 @@ export default {
             touristEc: null,
             portraitEc: null,
             ageEc: null,
-            genderEc: null,
+            // genderEc: null,
             cityName: [],
             cityData: [],
             proName: [],
@@ -180,9 +238,33 @@ export default {
             cateringData: [],
             scenicName: [],
             scenicData: [],
+            scenicZZ: 0,
+            hotelZZ: 0,
+            foodZZ: 0,
+            pickerOptions1: {
+                disabledDate: (time) => {
+                    return  time.getTime() > new Date(new Date().getTime()) || time.getTime() < new Date('2019-10-01').getTime();
+                }
+            }
+        }
+    },
+    filters:{
+        fixed(value){
+            return value.toFixed(2)
+        }
+    },
+    computed: {
+        genderWidth () {
+            return this.genderR + 5
+        },
+        endPoint () {
+            return angle(360 * (this.female / 100))
         }
     },
     methods: {
+        getVal (val, max) {
+            return max * (1 - val)
+        },
         // 游客画像
         async getPortrait(){
             var res = await this.$http.post(
@@ -193,19 +275,21 @@ export default {
                 })
             )
             let {data, code} = res.data
-            // age
+            // console.log(res)
             let ageInfo = []
             let portraitName = []
             let portraitData = []
+            let colorValue = []
+            this.female  = 0
+            this.male  = 0
             for(var key in data){
                 if(key == 'age2025'){ageInfo.push({name: '20-25岁', id: '1', value: data[key]})}
                 if(key == 'age2530'){ageInfo.push({name: '25-30岁', id: '2', value: data[key]})}
                 if(key == 'age3035'){ageInfo.push({name: '30-35岁', id: '3', value: data[key]})}
                 if(key == 'age3540'){ageInfo.push({name: '35-40岁', id: '4', value: data[key]})}
                 if(key == 'age40'){ageInfo.push({name: '40岁以上', id: '5', value: data[key]})}
-                // gender /cf
-                if(key == 'female'){this.female = Number(data[key])*100}
-                if(key == 'male'){this.male = Number(data[key])*100}
+                if(key == 'female'){this.female = Number(data[key])}
+                if(key == 'male'){this.male = Number(data[key])}
                 if(key == 'allTourist'){this.allTourist = data[key]}
                 if(key == 'avgTourist'){this.avgTourist = data[key]}
             
@@ -214,48 +298,39 @@ export default {
             sortData.forEach((item)=>{
                 portraitName.push(item.name)
                 portraitData.push({name: item.name, value: Math.round(item.value * 10000) / 100})
+                colorValue.push(Number(item.value))
             })
-            this.portraitAge(portraitName, portraitData)
-            this.gender()
+            this.portraitAge(portraitName, portraitData, colorValue)
+            // this.gender()
         },
-        // 游客消费
-        gender(){
-            this.genderEc = this.$echarts.init(this.$refs.genderEcharts)
-            var option = {
-                series: [
-                    {
-                        name: '访问来源',
-                        type: 'pie',
-                        center: ['50%', '50%'],
-                        radius: ['60%', '75%'],
-                        avoidLabelOverlap: false,
-                        hoverAnimation: false, //鼠标移入变大
-                        label:{
-                            show: false
-                        },
-                        labelLine: {
-                            normal: {
-                                show: false
-                            }
-                        },
-                        data: [
-                            {value: this.female, name: '女', itemStyle: {normal: {color: '#f087d1'}}},
-                            {value: 100 - Number(this.female), name: '男', itemStyle: {normal: {color: '#10b7ff'}}}
-                        ],
-                    }
-                ]
-            };
-            this.genderEc.setOption(option)
-            let myChart =this.genderEc;//解决echarts中this指向问题
-            myChart.dispatchAction({
-                type: 'highlight',
-                name: '女'
-            });
-            window.addEventListener('resize', this.resizeHandler)
-        },
-        portraitAge(portraitName, portraitData){
+        portraitAge(portraitName, portraitData, colorValue){
+            let total = 0
+            let totalColor = 0
+            portraitData.forEach(item=>{
+                total+= Number(item.value)
+            })
+            if(total < 100){
+                portraitData[portraitData.length-1].value = (Number(portraitData[portraitData.length-1].value) + (100 - Number(total.toFixed(2)))).toFixed(2)
+            }
+            colorValue.forEach(item=>{
+                totalColor+= Number(item)
+            })
+            if(totalColor < 1){
+                colorValue[colorValue.length - 1] = colorValue[colorValue.length - 1] + totalColor
+            }
+
             this.ageEc = this.$echarts.init(this.$refs.ageEcharts)
-            
+            var colors = ['#02d7cb','#f5c70f','#fa9837','#ae52ff','#4fdb5b']
+            function setColors (data) {
+                let result = []
+                data.reduce((old, d, idx) => {
+                    let now = old + parseFloat(d)
+                    result.push([now, colors[idx]])
+                    return now
+                }, 0)
+                result.push([1, 'rgba(255,255,255,0)'])
+                return result
+            }
             var option = {
                 title: {
                     show: portraitData.length == 0,
@@ -270,18 +345,19 @@ export default {
                 },
                 tooltip: {
                     trigger: 'item',
-                    formatter: '{b}: {c}'
+                    formatter: '{b}: {c}%'
                 },
                 legend: {
                     orient: 'vertical',
-                    left: '50%',
+                    left: '47%',
                     top: '5%',
                     icon: "circle",
+                    padding: [0,0,0,0],
                     itemWidth: 7,  // 设置宽度
                     itemHeight: 7, // 设置高度
                     itemGap: 6,
                     textStyle: {
-                        color: '#B2D2E3'
+                        color: '#B2D2E3',
                     },
                     data: portraitName,
                     formatter: function(params) {
@@ -294,48 +370,57 @@ export default {
                         return params + ":" + portraitData[legendIndex].value +'%';
                     }
                 },
-                color: ['#02d7cb','#f5c70f','#fa9837','#ae52ff','#4fdb5b',],
+                
                 series: [
                     {
-                        name: '访问来源',
-                        type: 'pie',
-                        center: ['30%', '50%'],
-                        radius: ['50%', '60%'],
-                        avoidLabelOverlap: false,
-                        hoverAnimation: false, //鼠标移入变大
-                        label: {
-                            normal: {
-                                show: false,
-                                position: 'center'
-                            },
-                            emphasis: {
-                                show: true,
-                                textStyle: {
-                                    fontSize: '30',
-                                    fontWeight: 'bold'
-                                }
+                        name: '统计',
+                        type: 'gauge',
+                        splitNumber: 10, //刻度数量
+                        radius: '50%', //图表尺寸
+                        center: ['27%', '40%'],
+                        startAngle: 90,
+                        endAngle: -270,
+                        axisLine: {
+                            show: false,
+                            lineStyle: {
+                                width: 2,
+                                shadowBlur: 0,
+                                color: setColors(colorValue)
                             }
                         },
+                        splitLine: {
+                            show: false
+                        },
+                        axisTick: {
+                            show: true,
+                            lineStyle: {
+                                color: 'auto',
+                                width: 1
+                            },
+                            length: 8,
+                            splitNumber: 6
+                        },
+                        axisLabel: {
+                            show: false
+                        },
+                    }, {
+                        name:'访问来源',
+                        type:'pie',
+                        radius: ['59%', '61%'],
+                        center: ['27%', '40%'],
+                        color: colors,
                         labelLine: {
                             normal: {
                                 show: false
                             }
                         },
-                        data: portraitData,
-                    },
-                     {
-                        name: '外边框',
-                        type: 'pie',
-                        hoverAnimation: false, //鼠标移入变大
-                        center: ['30%', '50%'],
-                        radius: ['68%', '70%'],
                         label: {
                             normal: {
-                                show: false,
+                                show: false
                             }
                         },
-                        data: portraitData,
-                    },
+                        data: portraitData
+                    }
                 ]
             };
             this.ageEc.setOption(option)
@@ -347,17 +432,29 @@ export default {
                 `/analysis/findTouristConsumePortraitMarriedInfo?endDate=${this.endValue}&startDate=${this.beginValue}`,
             )
             let {data, code} = res.data
+            // console.log(res)
             let married = 0
             let withChild = 0
             let tourismDr = 0
+            var that = this
             for(var key in data){
-                if(key == 'married'){married = Number(Number(data[key])*100).toFixed(2)}
-                if(key == 'hasChild'){withChild = Number(Number(data[key])*100).toFixed(2)}
-                if(key == 'tourismDr'){tourismDr = Number(Number(data[key])*100).toFixed(2)}
+                if(key == 'married'){
+                    married = Number(Number(data[key])).toFixed(2)
+                    that.list[0].value = married
+                }
+                if(key == 'hasChild'){
+                    withChild = Number(Number(data[key])).toFixed(2)
+                    that.list[1].value =  withChild
+                }
+                if(key == 'tourismDr'){
+                    tourismDr = Number(Number(data[key])).toFixed(2)
+                    that.list[2].value = tourismDr
+                }
             }
-            this.marriage(married)
-            this.child(withChild)
-            this.travelPerson(tourismDr)
+            // console.log(this.list)
+            // this.marriage(married)
+            // this.child(withChild)
+            // this.travelPerson(tourismDr)
         },
         marriage(data){
             var marriageEchat = this.$refs.XF_portrait_bottom_ec1
@@ -381,9 +478,14 @@ export default {
             )
             let {data, code} = res.data
             // console.log(res)
-            var reData = Number(Number(data.revisitRatio)*100).toFixed(2)
+            var reData = Number(Number(data.revisitRatio)).toFixed(2)
             var marriageEchat = this.$refs.XF_portrait_bottom_ec4
-            this.portraitBottom(reData, marriageEchat, '重游率')
+            // this.list[3] = {
+            //             name: '重游率',
+            //             value: reData
+            //         }
+            // this.list[3].value = reData
+            // this.portraitBottom(reData, marriageEchat, '重游率')
         },
         portraitBottom(passData, refEchart, name){
             this.portraitEc = this.$echarts.init(refEchart)
@@ -506,20 +608,36 @@ export default {
             // console.log(res)
             this.proName = []
             this.proData = []
+            var proTotal = 0
+            var cityTotal = 0
             for(var key in data){
                 if(key == 'provinceData'){
-                    var jsStyleData = jsonSort(JSON.parse(data[key]), false).slice(0,10)
-                    jsStyleData.forEach((item)=>{
-                        this.proName.push(item.name)
-                        this.proData.push({name: item.name, value:Math.round(item.value * 10000) / 100})
-                    })
+                    var jsStyleData = jsonSort(JSON.parse(data[key]), false).slice(0,6)
+                    if(jsStyleData.length != 0){
+                        jsStyleData.forEach((item)=>{
+                            cityTotal += Math.round(Number(item.value) * 10000) / 100
+                            this.proName.push(item.name)
+                            this.proData.push({name: item.name, value:Math.round(item.value * 10000) / 100})
+                        })
+                        if(cityTotal < 100){
+                            this.proName.push('其他')
+                            this.proData.push({name: '其他', value: Number(100 - cityTotal).toFixed(2)})
+                        }
+                    }
                 }
                 if(key == 'cityData'){
-                    var jsStyleData = jsonSort(JSON.parse(data[key]), false).slice(0,10)
-                    jsStyleData.forEach((item)=>{
-                        this.cityName.push(item.name)
-                        this.cityData.push({name: item.name, value: Math.round(item.value * 10000) / 100})
-                    })
+                    var jsStyleData = jsonSort(JSON.parse(data[key]), false).slice(0,6)
+                    if(jsStyleData.length != 0){
+                        jsStyleData.forEach((item)=>{
+                            proTotal += Math.round(Number(item.value) * 10000) / 100
+                            this.cityName.push(item.name)
+                            this.cityData.push({name: item.name, value: Math.round(item.value * 10000) / 100})
+                        })
+                        if(proTotal < 100){
+                            this.cityName.push('其他')
+                            this.cityData.push({name: '其他', value: Number(100 - proTotal).toFixed(2)})
+                        }
+                    }
                 }
             }
 
@@ -541,6 +659,7 @@ export default {
                     startDate: this.beginValue
                 })
             )
+            console.log(res)
             let {data, code} = res.data
             var Xdate = []
             var series1 = []   //酒店
@@ -551,11 +670,39 @@ export default {
             data.forEach(item => {
                 this.totalXF += Number(item.total)
                 this.avgXF += Number(item.avgConsumption)
-                Xdate.push(String(item.dateTime).slice(4,6)+'/'+String(item.dateTime).slice(6,8))
-                series3.push(item.avgCatering)
-                series2.push(item.avgScenic)
-                series1.push(item.avgHotel)
             });
+            let sliceData = data
+            if(data.length < 8){
+                sliceData.forEach(item => {
+                    Xdate.push(String(item.dateTime).slice(4,6)+'/'+String(item.dateTime).slice(6,8))
+                    series3.push(item.avgCatering)
+                    series2.push(item.avgScenic)
+                    series1.push(item.avgHotel)
+                    
+                });
+            } else if(data.length <= 20){
+                for(var i = 0; i <= data.length; i+=4){
+                    if((data[i])){
+                        Xdate.push(String(data[i].dateTime).slice(4,6)+'/'+String(data[i].dateTime).slice(6,8))
+                        series3.push(data[i].avgCatering)
+                        series2.push(data[i].avgScenic)
+                        series1.push(data[i].avgHotel)
+                    }else{
+                        break
+                    }
+                }
+            } else{
+                for(var i = 0; i <= data.length; i+=5){
+                    if(data[i]){
+                        Xdate.push(String(data[i].dateTime).slice(4,6)+'/'+String(data[i].dateTime).slice(6,8))
+                        series3.push(data[i].avgCatering)
+                        series2.push(data[i].avgScenic)
+                        series1.push(data[i].avgHotel)
+                    }else {
+                        break
+                    }
+                }
+            }
             if(this.avgXF != 0){
                 this.avgXF = this.avgXF / data.length
             }
@@ -712,11 +859,11 @@ export default {
                 },
                 legend: {
                     orient: 'vertical',
-                    left: '50%',
-                    bottom: '25%',
+                    left: '65%',
+                    top: '10%',
                     itemWidth: 12,  // 设置宽度
                     itemHeight: 12, // 设置高度
-                    itemGap: 16,
+                    itemGap: 12,
                     textStyle:{
                         color: '#B2D2E3',
                         fontSize: 12
@@ -737,7 +884,7 @@ export default {
                         name: '访问来源',
                         type: 'pie',
                         radius: '65%',
-                        center: ['30%', '40%'],
+                        center: ['35%', '40%'],
                         avoidLabelOverlap: false,
                         label: {
                             show: false,
@@ -759,7 +906,7 @@ export default {
                             }
                         },
                         data: cpData,
-                        color: ['#F6C80F','#EC87BF','#8256E8','#FFD184','#E35D68','#4EABFF']
+                        color: ['#ED5400', '#1FB5A5','#EC87BF','#8256E8','#FFD184','#E35D68','#4EABFF']
                     }
                 ]
             };
@@ -776,11 +923,19 @@ export default {
                 })
             )
             let {data, code} = res.data
-            // console.log(res)
+            console.log(res)
+            this.cateringAvg = 0
+            this.hotelAvg = 0
+            this.scenicAvg = 0
+            this.scenicZZ = 0
+            this.foodZZ = 0
+            this.hotelZZ = 0
             this.hotelName = []
             this.hotelData = []
             this.cateringName = []
             this.cateringData = []
+            this.scenicName = []
+            this.scenicData = []
             for(var key in data){
                 if(key == 'cateringAvg'){this.cateringAvg = data[key]} //餐饮
                 if(key == 'hotelAvg'){this.hotelAvg = data[key]} //酒店
@@ -789,22 +944,34 @@ export default {
                     var jsStyleData = JSON.parse(data[key])
                     for(var key in jsStyleData){
                         this.hotelName.push(key)
-                        this.hotelData.push({name: key, value: jsStyleData[key]})
+                        this.hotelData.push({name: key, value: (Number(jsStyleData[key])*100).toFixed(2)})
                     }
                 }
                 if(key == 'cateringOrder'){   //餐饮
                     var jsStyleData = JSON.parse(data[key])
                     for(var key in jsStyleData){
                         this.cateringName.push(key)
-                        this.cateringData.push({name: key, value: jsStyleData[key]})
+                        this.cateringData.push({name: key, value: (Number(jsStyleData[key])*100).toFixed(2)})
                     }
                 }
                 if(key == 'scenicOrder'){
                     var jsStyleData = JSON.parse(data[key])
                     for(var key in jsStyleData){
                         this.scenicName.push(key)
-                        this.scenicData.push({name: key, value: jsStyleData[key]})
+                        this.scenicData.push({name: key, value: (Number(jsStyleData[key])*100).toFixed(2)})
                     }
+                }
+                var scenicValue = 0
+                var foodValue = 0
+                var hotelValue = 0
+                if(Number(data['lastScenicAvg']) != 0){
+                    this.scenicZZ = Number((Number(data['scenicAvg']) / Number(data['lastScenicAvg']))).toFixed(2)
+                }
+                if(Number(data['lastCateringAvg']) != 0){
+                    this.foodZZ = Number((Number(data['cateringAvg']) / Number(data['lastCateringAvg']))*100).toFixed(2)
+                }
+                if(Number(data['lastHotelAvg']) != 0){
+                    this.hotelZZ = Number((Number(data['hotelAvg']) / Number(data['lastHotelAvg']))*100 ).toFixed(2)
                 }
             }
             this.hotel()
@@ -822,7 +989,8 @@ export default {
             this.touristXf(this.hotelName, this.hotelData, this.$refs.touristEcharts3)
         },
         touristXf(touristName, touristData, touristEcharts){
-            this.touristEc = this.$echarts.init(touristEcharts )
+            console.log(touristData)
+            this.touristEc = this.$echarts.init(touristEcharts)
             var giftImageUrl = bb.bb
             var option = {
                 title:{
@@ -836,7 +1004,7 @@ export default {
                 },
                 tooltip: {
                     trigger: 'item',
-                    formatter: '{b} : {c}%'
+                    formatter: '{b} : {c}%',
                 },
                 legend: {
                     left: 'center',
@@ -852,8 +1020,8 @@ export default {
                         type: 'image',
                         style: {
                             image: touristData.length == 0 ? '' : giftImageUrl,
-                            width: 45,
-                            height: 45
+                            width: 30,
+                            height: 30
                         },
                         left: 'center',
                         top: 'center',
@@ -863,7 +1031,7 @@ export default {
                     {
                         name: '面积模式',
                         type: 'pie',
-                        radius: [30, 80],
+                        radius: [26, 60],
                         center: ['50%', '50%'],
                         roseType: 'area',
                         label: {
@@ -871,7 +1039,7 @@ export default {
                                 textStyle: {
                                     color: '#fff'  // 改变标示文字的颜色
                                 },
-                                padding: [20, -60],
+                                padding: [20, -70],
                                 rich: {
                                     a: {
                                         fontSize: 12,
@@ -894,15 +1062,14 @@ export default {
                                     } else {
                                         valueTxt = data.data.name
                                     }
-                                    return  Number(Number(data.data.value)*100).toFixed(2) + '%'+valueTxt +'\n'
+                                    return  Number(data.data.value) + '%'+valueTxt +'\n'
                                 },
-                                
                             }
                         },
                         labelLine:{  
                             normal:{  
-                                length: 6,  
-                                length2: 60, 
+                                length: 12,  
+                                length2: 70, 
                                 lineStyle: {
                                     color: "#fff"  // 改变标示线的颜色
                                 } 
@@ -922,24 +1089,55 @@ export default {
             this.touristEc.resize()
             this.portraitEc.resize()
             this.ageEc.resize()
-            this.genderEc.resize()
+        },
+        choseMonth(data){
+            this.mounthValue = data
+            this.beginValue = moment(new Date(data)).startOf('month').format("YYYY-MM-DD")
+            this.endValue = moment(new Date(data)).endOf('month').format("YYYY-MM-DD")
+            this.nearWeak()
+            this.getPortrait()
+            this.toggleCityTab1(0)
+            this.getConsume()
+            this.getIdentity()
+            this.inResize = false;
+            var that = this
+            setTimeout(() => {
+                that.inResize = true
+            }, 100);
         },
         beginChange(data){
             this.beginValue = data
-            this.$refs.focesInput.focus();
+            var endTime = moment(new Date((new Date(data)).getTime(data)+ 6 * 24 * 3600 * 1000)).format('YYYY-MM-DD')
+            this.endValue = endTime
+            this.nearWeak()
+            this.getPortrait()
+            this.toggleCityTab1(0)
+            this.getConsume()
+            this.getIdentity()
+            this.inResize = false;
+            var that = this
+            setTimeout(() => {
+                that.inResize = true
+            }, 100);
+            // this.$refs.focesInput.focus();
         },
         endChange(data){
             this.endValue = data
+            var beginTime = moment(new Date((new Date(data)).getTime(data)- 6 * 24 * 3600 * 1000)).format('YYYY-MM-DD')
+            this.beginValue = beginTime
             this.nearWeak()
             this.getPortrait()
-            this.toggleCityTab1()
+            this.toggleCityTab1(0)
             this.getConsume()
             this.getIdentity()
+            this.inResize = false;
+            var that = this
+            setTimeout(() => {
+                that.inResize = true
+            }, 100);
         }
     },
     mounted(){
-        // this.beginValue = moment(this.beginValue).format('YYYY-MM-DD')
-        // this.endValue = moment(this.endValue).format('YYYY-MM-DD')
         this.getPortrait()
         this.getIdentity()
         this.getConsume()
@@ -953,7 +1151,7 @@ export default {
         // this.travelPerson()
         this.reTravel()
         // this.portraitAge()
-        this.gender()
+        // this.gender()
     }
 }
 function jsonSort(jsonObj, desc) {
@@ -979,15 +1177,168 @@ function compare(property,desc) {
 }
 </script>
 
-<style>
+<style Scoped>
+    .XF_date .el-icon-date:before{
+        background: url('../../assets/hotel/date_icon.png') no-repeat;
+        background-size: 100% 100%;
+        width: 21px;
+        height: 21px;
+        position: absolute;
+        top: 14px;
+        left: 0;
+        margin-right: 2px;
+        content: '';
+    }
+    .XF_date .el-date-editor.el-input{
+        width: 130px;
+        cursor: pointer;
+    } 
+    .XF_date .el-date-editor.el-input input{
+        cursor: pointer;
+        border: none;
+        color: #ABCBFF;
+        background-color: transparent;
+    }
+    .XF_date .el-input__prefix{
+        left: 46px;
+    }
+    .XF_date{
+        /* width: 20%; */
+        width: 188px;
+        height: 48px;
+        position: absolute;
+        cursor: pointer;
+        top: 0px;
+        right: 20px;
+        z-index: 999;
+    }
+    .XF_date input{
+        width: 188px;
+        height: 48px;
+        text-align: center;
+        color: #ABCBFF;
+        background: url('../../assets/hotel/dateBj.png') no-repeat;
+        background-size: 100% 100%;
+    }
     .el-picker-panel.down_date{
         background-color: #072342;
+        color: #ABCBFF;
     }
     .el-picker-panel.down_date .el-date-picker__header-label{
         color: #ABCBFF;
     }
     .el-picker-panel.down_date .el-picker-panel__icon-btn{
         color: #ABCBFF;
+    }
+    .el-picker-panel.down_date .el-date-table td.disabled div{
+        background-color: #072342;
+        color: #999;
+    }
+    .el-picker-panel.down_date .normal.disabled{
+        color: #aaa;
+    }
+    .touristXF .el-input--prefix .el-input__inner{
+        color: #ABCBFF;
+        border: none;
+    }
+    .XF_portrait_bottom_text{
+        width: 100%;
+        text-align: center;
+        position: absolute;
+        bottom: -12px;
+        color: #ABCCEB;
+    }
+    .XF_portrait_bottom.ider{
+        width: 100%;
+    }
+    .XF_portrait_bottom.ider ul{
+        /* position: absolute; */
+        display: flex;
+        width: 100%;
+        height: 100%;
+    }
+    .XF_portrait_bottom.ider ul li{
+        float: left;
+        width: 25%;
+        height: 85%;
+        position: relative;
+        /* position: absolute;
+        left: 0;
+        top: 0; */
+        font-size: 12px;
+    }
+    .XF_portrait_bottom.ider ul li:nth-child(1){
+        margin-left: 10%;
+    }
+    .XF_portrait_bottom.ider ul li label{
+        width: 25px;
+        height: 16px;
+        color: #fff;
+        text-align: center;
+        position: absolute;
+        writing-mode: vertical-lr;
+        bottom: -8px;
+        left: 50%;
+        transform: translate(-50%);
+    }
+    .XF_portrait_bottom.ider ul li img{
+        display: block;
+        width: 100px;
+        /* width: auto; */
+        height: 100px;
+        margin: 0 auto;
+        /* position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%); */
+    }
+    .XF_portrait_bottom.ider ul li .pie{
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+
+    }
+    .XF_portrait_bottom.ider ul li:nth-child(1) img, .ider ul li:nth-child(3) img{
+        -webkit-animation: mapRotateColor 3.7s 1s linear infinite;
+        /* left: 117px;
+        top: 7px; */
+    }
+    .XF_portrait_bottom.ider ul li:nth-child(2) img, .XF_portrait_bottom.ider ul li:nth-child(4) img{
+        -webkit-animation: mapRotateColor1 3.7s 1s linear infinite;
+    }
+    .XF_portrait_bottom.ider ul li p{
+        text-align: center;
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        color: #0CE3DC;
+    }
+    .XF_portrait_bottom.ider circle{
+        stroke-linecap: round;
+        fill: none;
+        stroke-width: 4;
+        stroke-dasharray: 175;
+        stroke-dashoffset: 175;
+        transform: rotatez(-90deg);
+        transform-origin: 53px;
+    }
+    @keyframes mapRotateColor {  
+        0%{
+            -webkit-transform:rotate(0deg);
+        }
+        100%{
+            -webkit-transform:rotate(-360deg);
+        }
+    }
+    @keyframes mapRotateColor1 {  
+        0%{
+            -webkit-transform:rotate(0deg);
+        }
+        100%{
+            -webkit-transform:rotate(360deg);
+        }
     }
     .touristXF{
         width: 100%;
@@ -1025,37 +1376,39 @@ function compare(property,desc) {
         position: relative;
     }
     .XF_date{
-        height: 40px;
-        width: 340px;
+        width: 188px;
+        height: 48px;
         position: absolute;
-        right: 23px;
-        top: -36px;
-    }
-    .XF_date1, .XF_date2{
-        width: 162px;
-        height: 31px;
-        display: inline-block;
-        position: relative;
-        z-index:666;
-    }   
-    .XF_date2{
-        float: right;
+        cursor: pointer;
+        top: 0px;
+        right: 20px;
+        z-index: 999;
     }
     .XF_date .el-input__inner{
-        width: 162px;
-        height: 37px;
-        border: none;
-        color: #3EDCFE;
-        background: url('../../assets/hotel/pass_date_bg.png') no-repeat;
+        width: 188px;
+        height: 48px;
+        text-align: center;
+        color: #ABCBFF;
+        background: url('../../assets/hotel/dateBj.png') no-repeat;
         background-size: 100% 100%;
         cursor: pointer;
     }
+    /* .XF_date .el-icon-date:before{
+        background: url('../../assets/hotel/date_icon.png') no-repeat;
+        background-size: 100% 100%;
+        width: 21px;
+        height: 21px;
+        position: absolute;
+        top: 14px;
+        left: 0;
+        margin-right: 2px;
+    } */
     .XF_container_top{
         height: 49.5%;
         width: 100%;
         cursor: pointer;
     }
-    .XF_date1_down{
+    /* .XF_date1_down{
         width: 10px;
         height: 6px;
         background: url('../../assets/hotel/pass_down.png') no-repeat;
@@ -1065,7 +1418,7 @@ function compare(property,desc) {
         margin-top: -3px;
         right: 10%;
         pointer-events: none;
-    }
+    } */
     .XF_container_bottom{
         height: calc(50.5% - 18px);
         width: 100%;
@@ -1076,8 +1429,8 @@ function compare(property,desc) {
     }
     .tourist_total_title{
         width: 100%;
-        height: 11.11%;
-        background: url('../../assets/hotel/XF_total_bj.png') no-repeat;
+        height: 12.11%;
+        background: url('../../assets/hotel/CV_bottom_title.png') no-repeat;
         background-size: 100% 100%;
         position: relative;
     }
@@ -1110,7 +1463,7 @@ function compare(property,desc) {
         width: 100%;
         height: 25px;
         color: #B2D2E3;
-        margin-top: 25px;
+        margin-top: 15px;
         line-height: 25px;
         text-align: center;
         font-size: 14px;
@@ -1122,7 +1475,7 @@ function compare(property,desc) {
     }
     .tourist_total_1_echart{
         width: 100%;
-        height: calc(100% - 90px);
+        height: calc(100% - 80px);
     }
     /* 左 */
     /* 游客画像 */
@@ -1136,10 +1489,11 @@ function compare(property,desc) {
     }
     .XF_portrait_title{
         width: 100%;
-        height: 13.76%;
+        height: 12.5%;
         background: url('../../assets/hotel/F_l1_title.png') no-repeat;
         background-size: 100% 100%;
         position: relative;
+        margin-top: 1%;
     }
     .XF_portrait_title_txt{
         width: 100%;
@@ -1194,9 +1548,8 @@ function compare(property,desc) {
         height: 100%;
         float: left;
     }
-    .XF_portrait_gender{
-        padding-left: 5px;
-        box-sizing: border-box;
+    .XF_portrait_gender .gender{
+        width: 245px;
     }
     .XF_portrait_gender_nan, .XF_portrait_gender_nv{
         width: 60px;
@@ -1225,7 +1578,8 @@ function compare(property,desc) {
         color: #fd78b9;
     }
     .XF_portrait_gender_ec{
-        width: calc(100% - 120px);
+        width: 100px;
+        /* width: calc(100% - 120px); */
         height: 100%;
         float: left;
     }
@@ -1310,6 +1664,55 @@ function compare(property,desc) {
     .XF_btn_detail > li.active{
         background: rgba(18,138,255,0.2);
     }
+    .XF_portrait_gender_ec .gender-area {
+        font-size: 14px;
+        display: flex;
+        color: #4ABFFE;
+        justify-content: center;
+        align-items: center;
+        margin-top: 22px;
+        text-align: center;
+    }
+    .XF_portrait_gender_ec .man, .XF_portrait_gender_ec .woman{
+        max-width: 50px;
+        overflow: hidden;
+    }
+    .XF_portrait_gender_ec .ring{
+        fill: none;
+        stroke-width: 4;
+    }
+    .XF_portrait_gender_ec .manchart {
+        stroke-dasharray: 251;
+        stroke-dashoffset: 0;
+        transform: rotatez(-90deg);
+        transform-origin: 50px;
+    }
+    .XF_portrait_gender_ec .womanchart {
+        stroke-dasharray: 198;
+        stroke-dashoffset: 198;
+        transform: rotatez(-90deg);
+        transform-origin: 50px;
+    }
+    .XF_portrait_gender_ec .endline{
+        transform: rotate(-90deg);
+        transform-origin: 50px;
+    }
+    .XF_portrait_gender_ec .decoration{
+        background: url('../../assets/img/portrait/decoration@2x.png') no-repeat;
+        background-size: 201px 47px;
+        width: 201px;
+        height: 47px;
+        position: absolute;
+        bottom: 25px;
+    }
+    @media screen and (max-width: 1500px){
+        .XF_portrait_gender_ec{
+            width: 90px;
+        }
+        .XF_portrait_gender_nan, .XF_portrait_gender_nv{
+            width: 45px;
+        }
+    }
     @media screen and (max-width: 1400px) {
         .XF_portrait_gender_nan_img img{
             width: 36px;
@@ -1323,18 +1726,26 @@ function compare(property,desc) {
             box-sizing: border-box;
         }
         .tourist_total_1_detial{
-            margin-top: 8px;
+            margin-top: 0px;
             font-size: 13px;
         }
         .XF_date{
-            width: 300px;
+            width: 188px;
         }
         .el-date-editor.el-input, .el-date-editor.el-input__inner{
             width: 100%;
+            border: none;
+            color: #ABCBFF;
         }
-        .XF_date1, .XF_date2{
-            width: 140px;
-            height: 31px;
+        .XF_portrait_bottom.ider ul li img{
+            display: block;
+            width: 75px;
+            height: 75px;
+        }
+        .XF_btn_detail > li{
+            width: 85px;
+            height: 28px;
+            line-height: 28px;
         }
     }
 </style>

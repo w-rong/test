@@ -7,6 +7,8 @@
           <input type="text" placeholder="请输入餐饮名称" v-model="unitName" />
           <button type="button" @click="find()">查询</button>
           <button type="button" @click="add()">新增数据</button>
+          <button type="button" @click="derive()">导出</button>
+          <button type="button" @click="showLead()">导入</button>
         </div>
         <div class="basis_catering_content_right_content_table">
           <table>
@@ -19,7 +21,7 @@
               <td>操作</td>
             </tr>
             <tr>
-              <td v-show="caterList.length == ''" colspan="7" class="noinfo">没有找到匹配的记录</td>
+              <td v-show="caterList.length == ''" colspan="6" class="noinfo">没有找到匹配的记录</td>
             </tr>
             <tr v-for="(item, index) in caterList" :key="index">
               <td style="width:12%">{{item.restaurantName}}</td>
@@ -64,15 +66,14 @@
                 </el-col>
               </el-col>
               <el-col :span="22">
-                <el-form-item label="餐饮地址" prop="address">
-                  <el-input v-model="ruleForm.address"></el-input>
-                </el-form-item>
-              </el-col>
-              <el-col :span="22">
                 <el-col :span="12">
-                  <el-form-item label="联系电话">
-                    <el-input v-model="ruleForm.tel"></el-input>
+                  <el-form-item label="餐饮地址" prop="address">
+                    <el-input v-model="ruleForm.address"></el-input>
                   </el-form-item>
+                </el-col>
+                <el-col :span="10" style="margin-left:10px;margin-top:5px">
+                  <el-button type="primary" plain size="small" @click="isMap=true">选择地址</el-button>
+                  <el-button type="primary" plain size="small" @click="searchLatLng">生成经纬度</el-button>
                 </el-col>
               </el-col>
               <el-col :span="22">
@@ -86,6 +87,36 @@
                     <el-input v-model="ruleForm.lng"></el-input>
                   </el-form-item>
                 </el-col>
+              </el-col>
+              <el-col :span="22">
+                <el-col :span="12">
+                  <el-form-item label="联系电话">
+                    <el-input v-model="ruleForm.tel"></el-input>
+                  </el-form-item>
+                </el-col>
+              </el-col>
+              <el-col :span="22">
+                <el-form-item label="图片地址">
+                  <el-col :span="12" style="margin-right:10px">
+                    <el-input v-model="ruleForm.imgUrl"></el-input>
+                  </el-col>
+                  <el-upload
+                    class="upload-demo"
+                    action="http://47.96.94.56:8082/upload/uploadPic"
+                    multiple
+                    name="picPath"
+                    :on-success="uploadSuccess"
+                    :before-upload="beforeUploadImg"
+                    :headers="token"
+                  >
+                    <el-button type="primary" size="small" plain>选择图片</el-button>
+                  </el-upload>
+                </el-form-item>
+              </el-col>
+              <el-col :span="22">
+                <el-form-item label="餐馆介绍">
+                  <el-input v-model="ruleForm.introduce"></el-input>
+                </el-form-item>
               </el-col>
             </el-row>
           </el-form>
@@ -112,15 +143,14 @@
                 </el-col>
               </el-col>
               <el-col :span="22">
-                <el-form-item label="餐饮地址" prop="address">
-                  <el-input v-model="ruleFormChange.address"></el-input>
-                </el-form-item>
-              </el-col>
-              <el-col :span="22">
                 <el-col :span="12">
-                  <el-form-item label="联系电话">
-                    <el-input v-model="ruleFormChange.tel"></el-input>
+                  <el-form-item label="餐饮地址" prop="address">
+                    <el-input v-model="ruleFormChange.address"></el-input>
                   </el-form-item>
+                </el-col>
+                <el-col :span="10" style="margin-left:10px;margin-top:5px">
+                  <el-button type="primary" plain size="small" @click="isMap=true">选择地址</el-button>
+                  <el-button type="primary" plain size="small" @click="searchLatLng1">生成经纬度</el-button>
                 </el-col>
               </el-col>
               <el-col :span="22">
@@ -135,6 +165,36 @@
                   </el-form-item>
                 </el-col>
               </el-col>
+              <el-col :span="22">
+                <el-col :span="12">
+                  <el-form-item label="联系电话">
+                    <el-input v-model="ruleFormChange.tel"></el-input>
+                  </el-form-item>
+                </el-col>
+              </el-col>
+              <el-col :span="22">
+                <el-form-item label="图片地址">
+                  <el-col :span="12" style="margin-right:10px">
+                    <el-input v-model="ruleFormChange.imgUrl"></el-input>
+                  </el-col>
+                  <el-upload
+                    class="upload-demo"
+                    action="http://47.96.94.56:8082/upload/uploadPic"
+                    multiple
+                    name="picPath"
+                    :before-upload="beforeUploadImg"
+                    :headers="token"
+                    :on-success="uploadSuccess"
+                  >
+                    <el-button type="primary" size="small" plain>选择图片</el-button>
+                  </el-upload>
+                </el-form-item>
+              </el-col>
+              <el-col :span="22">
+                <el-form-item label="餐馆介绍">
+                  <el-input v-model="ruleFormChange.introduce"></el-input>
+                </el-form-item>
+              </el-col>
             </el-row>
           </el-form>
           <span slot="footer" class="dialog-footer">
@@ -142,17 +202,43 @@
             <el-button @click="isedited=false">取消</el-button>
           </span>
         </el-dialog>
+        <!-- 选择地点弹框 -->
+        <el-dialog title="选择地点" :visible.sync="isMap" width="60%" :modal-append-to-body="true">
+          <Map @fun="getAddrss" @add="getDizhi"></Map>
+          <span slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="chooseAddress()">确定</el-button>
+          </span>
+        </el-dialog>
       </div>
     </div>
+    <!-- 导出弹窗 -->
+    <el-dialog title="导入文件" :visible.sync="isLead" width="30%">
+      <el-upload
+        class="upload-demo"
+        action="http://47.96.94.56:8082/excel/setPtBaseRestaurant"
+        multiple
+        name="uploadFile"
+        :before-upload="beforeUpload"
+        :headers="token"
+      >
+        <el-button type="primary" plain>导入</el-button>
+      </el-upload>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="isLead = false">取 消</el-button>
+        <el-button type="primary" @click="leadEnter()">确 定</el-button>
+      </span>
+    </el-dialog>
   </div>
 </template>
 <script>
+import Map from "../choose_address/map";
 import navbar from "../background_navbar/navbar";
 import Navbar from "../background_navbar/Navbar copy";
 import qs from "qs";
 export default {
   data() {
     return {
+      isMap:false,
       isBridge: false,
       //  总条数
       allAccount: 20,
@@ -165,12 +251,16 @@ export default {
       isedited: false,
       caterList: [],
       editCaterList: [],
+      token: "",
+      isLead: false,
       ruleForm: {
         name: "",
         address: "",
         lat: "",
         lng: "",
-        tel: ""
+        tel: "",
+        introduce:"",
+        imgUrl:""
       },
       rules: {
         name: [{ required: true, message: "请输入餐饮名称", trigger: "blur" }],
@@ -185,7 +275,9 @@ export default {
         address: "",
         lat: "",
         lng: "",
-        tel: ""
+        tel: "",
+        introduce:"",
+        imgUrl:""
       },
       rulesChange: {
         name: [{ required: true, message: "请输入餐饮名称", trigger: "blur" }],
@@ -199,9 +291,98 @@ export default {
   },
   components: {
     navbar,
-    Navbar
+    Navbar,
+    Map
   },
   methods: {
+    // 获取地图经纬度
+    getAddrss(data) {
+      this.ruleForm.lat = data[1];
+      this.ruleForm.lng = data[0];
+      this.ruleFormChange.lat = data[1];
+      this.ruleFormChange.lng = data[0];
+      // console.log(data);
+    },
+    getDizhi(data) {
+      this.ruleForm.address = data;
+      this.ruleFormChange.address = data;
+      // console.log(data);
+    },
+    searchLatLng() {
+      let geocoder = new T.Geocoder();
+      geocoder.getPoint(this.ruleForm.address, this.searchResult);
+    },
+    searchLatLng1() {
+      let geocoder = new T.Geocoder();
+      geocoder.getPoint(this.ruleFormChange.address, this.searchResult);
+    },
+    searchResult(result) {
+      if (result.getStatus() == 0) {
+        this.ruleForm.lat = result.location.lat;
+        this.ruleForm.lng = result.location.lon;
+        this.ruleFormChange.lat = result.location.lat;
+        this.ruleFormChange.lng = result.location.lon;
+      } else {
+        this.$message.error("请输入正确的地址");
+      }
+    },
+    // 获取地址
+    chooseAddress() {
+      this.isMap = false;
+    },
+    beforeUploadImg(file) {
+      // console.log(file);
+      var testmsg = file.name.substring(file.name.lastIndexOf(".") + 1);
+      const extension = testmsg === "png";
+      const extension2 = testmsg === "jpg";
+      // const isLt2M = file.size / 1024 / 1024 < 10
+      if (!extension && !extension2) {
+        this.$message({
+          message: "上传文件只能是 png、jpg格式!",
+          type: "warning"
+        });
+      }
+    },
+    uploadSuccess(response, file, fileList) {
+      this.ruleForm.imgUrl = response.msg;
+      this.ruleFormChange.imgUrl = response.msg;
+      // console.log(event, file, fileList);
+    },
+    // 导出
+    async derive() {
+      window.location.href = 'http://47.96.94.56:8082/excel/getExcelPtBaseRestaurantVO'
+      // let res = await this.$http.get(`/excel/getExcelPtBaseRestaurantVO`);
+      // console.log(res);
+    },
+    beforeUpload(file) {
+      // console.log(file);
+      var testmsg = file.name.substring(file.name.lastIndexOf(".") + 1);
+      const extension = testmsg === "xls";
+      const extension2 = testmsg === "xlsx";
+      // const isLt2M = file.size / 1024 / 1024 < 10
+      if (!extension && !extension2) {
+        this.$message({
+          message: "上传文件只能是 xls、xlsx格式!",
+          type: "warning"
+        });
+      }
+      // if(!isLt2M) {
+      //     this.$message({
+      //         message: '上传文件大小不能超过 10MB!',
+      //         type: 'warning'
+      //     });
+      // }
+      // return (extension || extension2) && isLt2M
+      return extension || extension2;
+    },
+    showLead() {
+      this.isLead = true;
+      this.token = { Authorization: localStorage.getItem("Authorization") };
+    },
+    leadEnter() {
+      this.isLead = false;
+      this.getScenicList();
+    },
     //   每页条数改变
     handleSizeChange() {
       console.log(this.pageSize);
@@ -222,6 +403,9 @@ export default {
     },
     // 获取餐馆列表
     async getCaterList() {
+      if (this.unitName != "") {
+        this.currentPage = 1;
+      }
       let res = await this.$http.get(
         `/base/listPtBaseRestaurant?pagNumber=${this.currentPage}&pagSize=${this.pageSize}&unitName=${this.unitName}`
       );
@@ -240,7 +424,9 @@ export default {
           address: this.ruleForm.address,
           lat: this.ruleForm.lat,
           lng: this.ruleForm.lng,
-          tel: this.ruleForm.tel
+          tel: this.ruleForm.tel,
+          synopsis:this.ruleForm.introduce,
+          flagPicUrl:this.ruleForm.imgUrl,
         })
       );
       console.log(res);
@@ -267,7 +453,9 @@ export default {
         this.ruleFormChange.lng = this.editCaterList.lng;
         this.ruleFormChange.lat = this.editCaterList.lat;
         this.ruleFormChange.tel = this.editCaterList.tel;
-        console.log(this.editCaterList);
+        this.ruleFormChange.introduce = this.editCaterList.synopsis;
+        this.ruleFormChange.imgUrl = this.editCaterList.flagPicUrl;
+        // console.log(this.editCaterList);
       }
     },
     // 编辑餐馆列表
@@ -278,6 +466,8 @@ export default {
       this.editCaterList.lng = this.ruleFormChange.lng;
       this.editCaterList.lat = this.ruleFormChange.lat;
       this.editCaterList.tel = this.ruleFormChange.tel;
+      this.editCaterList.synopsis = this.ruleFormChange.introduce;
+      this.editCaterList.flagPicUrl = this.ruleFormChange.imgUrl;
       let res = await this.$http.post(
         `/base/updatePtBaseRestaurant`,
         qs.stringify(this.editCaterList)
@@ -369,6 +559,7 @@ export default {
     }
   },
   mounted() {
+    this.token = { Authorization: localStorage.getItem("Authorization") };
     this.getCaterList();
   },
   created() {
@@ -380,12 +571,13 @@ export default {
 <style>
 .basis_catering_all_content {
   width: 100%;
-  /* height: 100%; */
+  height: 100%;
   background-color: #f4f4f4;
 }
 .basis_catering_content {
   margin-left: calc(210px);
-  height: 1080px;
+  height: calc(100% - 50px);
+  overflow-y: auto;
   background-color: #fff;
   position: relative;
 }
@@ -449,6 +641,7 @@ export default {
   border: 1px solid #ccc;
   text-align: center;
   padding: 10px 0;
+  line-height: 20px;
 }
 .basis_edit {
   color: #0095ff;

@@ -124,7 +124,7 @@ export default {
 <style scoped>
 #my_container {
   /* margin-left: 110px; */
-  height: 600px;
+  height: 500px;
   /* width: calc(100% - 110px); */
 }
 </style>

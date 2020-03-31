@@ -4,8 +4,8 @@
     <!-- 导航栏 -->
     <nav class="content">
       <div class="nav-left">
-        <div class="nav_choose">
-          <img src="../../../../assets/image/yingji/index.png" alt="">
+        <div class="nav_choose" style="padding-right: 0px;width:70px">
+          <img src="../../../../assets/image/yingji/index.png" alt />
           <router-link to="/meetIndex">首页</router-link>
         </div>
         <div class="nav_choose">|</div>
@@ -38,7 +38,7 @@
   </div>
 </template>
 <script>
-import LeftRow from "./LeftRow.vue";
+import LeftRow from "./yingjiLeftRow.vue";
 import { mapGetters, mapActions } from "vuex";
 export default {
   data() {
@@ -57,8 +57,9 @@ export default {
           src: require("../../../../assets/img/thing.png"),
           name: "应急事件管理",
           paths: [
-            { path: "/meetThing", title: "应急事件列表" },
-            { path: "/meetPlan", title: "应急预案列表" },
+            { path: "/meetThing", title: "未处理事件列表" },
+            { path: "/planHandle", title: "预案处理事件列表" },
+            { path: "/personHandle", title: "人工处理事件列表" }
             // { path: "/emergencyThing", title: "突发事件列表" }
           ]
         },
@@ -66,14 +67,29 @@ export default {
           src: require("../../../../assets/img/thing.png"),
           name: "应急资源管理",
           paths: [
-            { path: "/meetPerson", title: "应急人员列表" },
             { path: "/meetOrg", title: "应急机构列表" },
+            { path: "/meetPerson", title: "应急人员列表" },
+            { path: "/meetPlan", title: "应急预案列表" },
             // { path: "/meetDuty", title: "值班信息列表" },
-            { path: "/meetAddressBook", title: "通讯录列表" }
+            // { path: "/meetAddressBook", title: "通讯录列表" }
           ]
         }
       ]
     };
+  },
+  beforeRouteUpdate(to, from, next) {
+    console.log(to, from, next);
+    // if(to.fullPath!=from.fullPath){
+    //     next()
+    //     this.changeUser()
+    // }
+  },
+  beforeRouteEnter(to, from, next) {
+    console.log(to, from, next);
+    // if(to.fullPath!=from.fullPath){
+    //     next()
+    //     this.changeUser()
+    // }
   },
   methods: {
     reminder() {
@@ -130,52 +146,19 @@ export default {
     ...mapGetters(["routepath"])
   },
   created() {
-    // this.isBack();
-  },
-  watch: {
-    $route: {
-      handler: function(val, oldVal) {
-        console.log(val);
-      },
-      // 深度观察监听
-      deep: true
-    },
-    // routepath(val) {
-    //   console.log(val);
-    //   // console.log(this.items[0].paths);
-    //   var listPath = [];
-    //   this.items2[0].paths.forEach(element => {
-    //     listPath.push(element.path);
-    //   });
-    //   console.log(listPath);
-    //   if (this.isBacked == true) {
-    //     console.log(listPath.includes(val));
-    //     if (listPath.includes(val)) {
-    //       this.nowindex = 0;
-    //     } else {
-    //       this.nowindex = 1;
-    //       // if (val == "/fullView") {
-    //       //   this.nowindex = 2;
-    //       // } else {
-    //       //   this.nowindex = 1;
-    //       // }
-    //     }
-    //   } else {
-    //     // if (listPath.includes(val)) {
-    //     //   this.nowindex = 0;
-    //     // } else {
-    //     //   if (val == "/fullView") {
-    //     //     this.nowindex = 2;
-    //     //   } else {
-    //     //     this.nowindex = 1;
-    //     //   }
-    //     // }
-    //   }
-    // }
+    if (this.$route.path == "/meetPerson" || this.$route.path == "/meetOrg" || this.$route.path == "/meetPlan") {
+      this.nowindex = 1;
+    } else {
+      this.nowindex = 0;
+    }
   }
 };
 </script>
 <style scoped>
+a{
+  text-decoration:none;
+  color:#fff;
+}
 .choosecolor {
   color: blue;
   text-decoration: underline;
@@ -229,8 +212,8 @@ nav {
   display: flex;
   align-items: center;
 }
-.nav-left div.nav_choose>img{
-  width: 20%;
+.nav-left div.nav_choose > img {
+  width: 30%;
   height: 35%;
 }
 .nav-left div.nav_choose:nth-of-type(3) a {

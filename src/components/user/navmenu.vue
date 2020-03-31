@@ -3,7 +3,7 @@
     <div class="tabCon">
       <!-- <div class="menuCon_logo">
         <img src="../../../assets/images/logo.png" alt="">
-      </div> -->
+      </div>-->
       <p class="menu_title">普陀区文化和旅游信息服务平台</p>
       <div class="tabMenuItem">
         <ul class="tab_title">
@@ -48,6 +48,7 @@
       width="30%"
       :before-close="editPwdClose"
       center
+      custom-class="menuConDig"
     >
       <el-form
         :model="editFormRule"
@@ -60,18 +61,12 @@
         <el-form-item label="原密码" prop="oldPass">
           <el-input type="password" v-model="editFormRule.oldpass" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item
-          label="新密码"
-          prop="pass"
-          :rules="[ { required: true, message: '不能为空'}, {validator:validcodeName, trigger:'blur',  message: '6-16字母数字组合'}]"
-        >
+        <el-form-item label="新密码" prop="pass">
+          <!-- :rules="[ { required: true, message: '不能为空'}, {validator:validcodeName, trigger:'blur',  message: '6-16字母数字组合'}]" -->
           <el-input type="password" v-model="editFormRule.pass" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item
-          label="确认密码"
-          prop="checkPass"
-          :rules="[ { required: true, message: '不能为空'}, {validator:validcodeName, trigger:'blur',  message: '6-16字母数字组合'}]"
-        >
+        <el-form-item label="确认密码" prop="checkPass">
+          <!-- :rules="[ { required: true, message: '不能为空'}, {validator:validcodeName, trigger:'blur',  message: '6-16字母数字组合'}]" -->
           <el-input type="password" v-model="editFormRule.checkPass" autocomplete="off"></el-input>
         </el-form-item>
       </el-form>
@@ -82,7 +77,7 @@
     </el-dialog>
 
     <!-- 退出 -->
-    <el-dialog title="退出" :visible="exitWindowShow" width="30%" :before-close="editPwdClose" center>
+    <el-dialog title="退出" custom-class="menuConDig" :visible="exitWindowShow" width="30%" center>
       <span>确定退出?</span>
       <span slot="footer" class="dialog-footer">
         <el-button @click="exitWindowShow = false">取 消</el-button>
@@ -93,258 +88,157 @@
 </template>
 
 <script>
-import tab1 from '../user/tab/tab1.vue'
-import tab2 from '../user/tab/tab2.vue'
-import tab3 from '../user/tab/tab3.vue'
-import tab4 from '../user/tab/tab4.vue'
+import tab1 from "../user/tab/tab1.vue";
+import tab2 from "../user/tab/tab2.vue";
+import tab3 from "../user/tab/tab3.vue";
+import tab4 from "../user/tab/tab4.vue";
 // import globalInfo from '@/assets/js/userData.js'
-import axios from 'axios'
-import qs from 'qs'
+import md5 from "js-md5";
+import axios from "axios";
+import qs from "qs";
 // import CryptoJS from 'crypto-js'
 
 // import encrypt from '@/assets/js/jiami.js'
 export default {
-    components: {
-        tab1,tab2,tab3,tab4
-    },
-    data(){
-        var validatePass = (rule, value, callback) => {
-            if (value === '') {
-                callback(new Error('请输入密码'));
-            } else {
-                if (this.editFormRule.checkPass !== '') {
-                    this.$refs.editFormRule.validateField('checkPass');
-                }
-                callback();
-            }
-        };
-        var validatePass2 = (rule, value, callback) => {
-            if (value === '') {
-                callback(new Error('请再次输入密码'));
-            } else if (value !== this.editFormRule.pass) {
-                callback(new Error('两次输入密码不一致!'));
-            } else {
-                callback();
-            }
-        };
-        return{
-            validcodeName: (rule,value,callback)=>{
-                let reg= /(?!^[0-9]+$)(?!^[A-z]+$)(?!^[^A-z0-9]+$)^.{6,16}$/
-                if(!reg.test(value)){callback(new Error('必须是由4-9位数字和字母组合'))
-                }else{
-                    callback()
-                }
-            },
-            tabList:['产业管理','行业管理','公共服务','数据中心'],
-            nowIndex:0,
-            isShow:false,
-            seleDowShow: false,
-            editWindowShow : false,
-            exitWindowShow: false,
-            editFormRule: {
-                pass: '', //新密码
-                checkPass: '',//确认密码
-                oldpass: ''  //原密码
-            },
-            rules: {  //验证
-                pass: [
-                    { validator: validatePass, trigger: 'blur' }
-                ],
-                checkPass: [
-                    { validator: validatePass2, trigger: 'blur' }
-                ],
-                // oldpass: [
-                //     { validator: checkAge, trigger: 'blur' }
-                // ]
-            },
-            roleArr: [],
-            usernameParams: '',
-            userIdParams: '',
-            passwordParams: ''
-            // currUserId: '',
-            // userName: ''
+  components: {
+    tab1,
+    tab2,
+    tab3,
+    tab4
+  },
+  data() {
+    var validatePass = (rule, value, callback) => {
+      if (value === "") {
+        callback(new Error("请输入密码"));
+      } else {
+        if (this.editFormRule.checkPass !== "") {
+          this.$refs.editFormRule.validateField("checkPass");
         }
+        callback();
+      }
+    };
+    var validatePass2 = (rule, value, callback) => {
+      if (value === "") {
+        callback(new Error("请再次输入密码"));
+      } else if (value !== this.editFormRule.pass) {
+        callback(new Error("两次输入密码不一致!"));
+      } else {
+        callback();
+      }
+    };
+    return {
+      validcodeName: (rule, value, callback) => {
+        let reg = /(?!^[0-9]+$)(?!^[A-z]+$)(?!^[^A-z0-9]+$)^.{6,16}$/;
+        if (!reg.test(value)) {
+          callback(new Error("必须是由4-9位数字和字母组合"));
+        } else {
+          callback();
+        }
+      },
+      tabList: ["产业管理", "行业监管", "公共服务", "数据中心"],
+      nowIndex: 0,
+      isShow: false,
+      seleDowShow: false,
+      editWindowShow: false,
+      exitWindowShow: false,
+      editFormRule: {
+        pass: "", //新密码
+        checkPass: "", //确认密码
+        oldpass: "" //原密码
+      },
+      rules: {
+        //验证
+        // pass: [{ validator: validatePass, trigger: "blur" }],
+        // checkPass: [{ validator: validatePass2, trigger: "blur" }]
+        // oldpass: [
+        //     { validator: checkAge, trigger: 'blur' }
+        // ]
+      },
+      roleArr: [],
+      usernameParams: "",
+      userIdParams: "",
+      passwordParams: ""
+      // currUserId: '',
+      // userName: ''
+    };
+  },
+  methods: {
+    toggleTab(index) {
+      this.nowIndex = index;
     },
-    methods:{
-        toggleTab(index){
-            this.nowIndex = index       
-        },
-        sleDown: function(){
-            this.seleDowShow = true
-        },
-        hideDown(){
-            this.seleDowShow = false
-        },
-        editWindow: function(){
-            this.editWindowShow = true
-        },
-        editWindowHide: function(){
-            this.editWindowShow = false
-        },
-        editSubmit(editFormRule) {
-            this.$refs[editFormRule].validate(async(valid) => {
-                if (valid) {
-                    //两次输入密码一致
-                    //判断原密码正确性(调用登录接口)
-                    var res = await this.$http.post(
-                        `/api/UserInfo/GetUserByLoginAsync`,
-                        qs.stringify({
-                            UserName: this.usernameParams,
-                            Password: this.editFormRule.oldpass
-                            // Password: encrypt.encrypt(this.editFormRule.oldpass)
-                        })
-                    )
-                    let {data, isSuccess} = res.data
-                    if(isSuccess){
-                        // 修改密码
-                        var editRes = await this.$http.post(
-                            `/api/UserInfo/UpdateUserInfoAsync`,
-                            qs.stringify({
-                                Id: this.userIdParams,
-                                UserName: this.usernameParams,
-                                Password: this.editFormRule.oldpass
-                            // Password: encrypt.encrypt(this.editFormRule.oldpass)
-                            })
-                        )
-                        if(editRes.data.isSuccess){
-                            this.$message({
-                                showClose: true,
-                                message: '密码修改成功',
-                                type: 'success'
-                            });
-                            var that = this
-                            setTimeout(function(){
-                                that.$router.push({
-                                    path: "/",
-                                });
-                            },2000)
-                        }
-                    } else{
-                        this.$message({
-                            message: '请输入正确原密码',
-                            type: 'error'
-                        })
-                    }
-
-
-                } else {
-                    //两次输入密码不一致
-                    return false;
-                }
+    sleDown: function() {
+      this.seleDowShow = true;
+    },
+    hideDown() {
+      this.seleDowShow = false;
+    },
+    editWindow: function() {
+      this.editWindowShow = true;
+    },
+    editWindowHide: function() {
+      this.editWindowShow = false;
+    },
+    editSubmit(editFormRule) {
+      this.$refs[editFormRule].validate(async valid => {
+        if (valid) {
+          let passwordNew = md5(this.editFormRule.pass);
+          let passwordOld = md5(this.editFormRule.oldpass);
+          let userName = localStorage.getItem("username");
+          var editRes = await this.$http.post(
+            `/root/user/changePassword`,
+            qs.stringify({
+              newPwd: passwordNew,
+              uname: userName,
+              oldPwd: passwordOld
+              // Password: encrypt.encrypt(this.editFormRule.oldpass)
+            })
+          );
+          console.log(editRes);
+          if (editRes.data.msg == "修改成功") {
+            this.$message({
+              showClose: true,
+              message: "密码修改成功",
+              type: "success"
             });
-        },
-        resetSubmit(editFormRule) {
-            this.$refs[editFormRule].resetFields();
-        },
-        editPwdClose(done) { 
-           this.editWindowShow = false
-        },
-        exitLogin(){
-            this.exitWindowShow = true
-        },
-        Loginexit(){
-            this.$router.push('/')
-            localStorage.removeItem('token');
-        },
-        // async jumpUrl(code){
-        //     if(code =='noRole'){
-        //         this.$message({
-        //             message: '暂未开放',
-        //             type: 'error'
-        //         })
-        //         return
-        //     }
-        //     if(code == 'drawingMap'){
-        //         let routeData = this.$router.resolve({
-        //             path: "/drawingMap",
-        //         });
-        //         window.open(routeData.href, '_blank');
-        //     }
-        //     if(code == 'presentation'){
-        //         let routeData = this.$router.resolve({
-        //             path: "/presentation",
-        //         });
-        //         window.open(routeData.href, '_blank');
-        //     }
-            // 点击时根据当前权限编码判断权限
-        //     var resrole = await this.$http.get(`api/UserRoleInfo/GetUserRoleInfoByUserIdAsync?userId=${this.userIdParams}`)
-        //     const {roleId, userId} = resrole.data.data
-        //     this.roleArr.forEach(async (item,index)=>{
-        //         if(code == item.roleCode){
-        //             //子系统对应的权限id，根据权限id查找用户权限
-        //             if(roleId.indexOf(item.id) != -1){
-        //                 //有权限
-        //                 var res = await this.$http.get(`/api/UserInfo/GetUrl?roleCode=${code}`)
-        //                 const {status, data} = res
-        //                 if(status == 200){
-        //                     var jiamiUsername = encrypt.encrypt(this.usernameParams+'*'+(new Date().getTime()));//加密
-        //                     var jiamiPassword = encrypt.encrypt(this.passwordParams+'*'+(new Date().getTime()));//加密
-        
-        //                     var params = `code=${jiamiPassword}&un=${jiamiUsername}`
-        //                     var is360 = this.mime("type", "application/vnd.chromium.remoting-viewer")
-        //                     var roleUrl = ['yjglxt','xxtyfbxt','jcsjcj','wltgisyzt','htglxt', 'jqyxjcxt']
-        //                     if(roleUrl.indexOf(code) != -1){   //传参
-        //                         if (is360) {
-        //                             window.open(data,'_self')
-        //                         } else {
-        //                             window.open(`${data}?${params}`,'_blank')
-        //                         }
-        //                     } else{
-        //                         if(code == 'otayqjcxt'){
-        //                             var resUrl = await axios.get(data)
-        //                             window.open(`${resUrl.data}`,'_blank')
-        //                         } else {
-        //                             if (is360) {
-        //                                 window.open(data,'_self')
-        //                             } else {
-        //                                 window.open(`${data}`,'_blank')
-        //                             }
-        //                         }
-                                
-        //                     }
-                            
-        //                 }
-        //             } else{
-        //                 this.$message({
-        //                     message: '暂无权限',
-        //                     type: 'error'
-        //                 })
-        //             }
-        //         }
-        //     })
-        //     // 全域旅游全景视频互动服务VR系统
-        //     if(code == 'qylvqj'){
-        //         let routeData = this.$router.resolve({
-        //             name: "globalvr",
-        //         });
-        //         window.open(routeData.href, '_blank');
-        //     }
-        // },
-        // mime(option, value) {
-        //     var mimeTypes = navigator.mimeTypes;
-        //     for (var mt in mimeTypes) {
-        //         if (mimeTypes[mt][option] == value) {
-        //             return true;
-        //         }
-        //     }
-        //     return false;
-        // },
-        // async getRole(){
-        //     var resrole = await this.$http.post(`api/RoleInfo/GetAllRoleInfoAsync`)
-        //     const {data} = resrole.data
-        //     this.roleArr = data
-            
-        // },
+            this.editWindowShow = false;
+            var that = this;
+            setTimeout(function() {
+              that.$router.push({
+                path: "/"
+              });
+            }, 2000);
+          } else {
+            this.$message({
+              message: editRes.data.msg,
+              type: "error"
+            });
+          }
+        }
+      });
     },
-    mounted(){
-        // this.getRole()
+    resetSubmit(editFormRule) {
+      this.$refs[editFormRule].resetFields();
     },
-    created(){
-        // this.usernameParams =  encrypt.decrypt(this.$route.query.u).split('*')[0]
-        // this.passwordParams =  encrypt.decrypt(this.$route.query.p).split('*')[0]
-        // this.userIdParams =  encrypt.decrypt(this.$route.query.i)
-    }
-}
+    editPwdClose(done) {
+      this.editWindowShow = false;
+    },
+    exitLogin() {
+      this.exitWindowShow = true;
+    },
+    Loginexit() {
+      this.$router.push("/");
+      // localStorage.removeItem("Authorization");
+    },
+  },
+  mounted() {
+    // this.getRole()
+  },
+  created() {
+    // this.usernameParams =  encrypt.decrypt(this.$route.query.u).split('*')[0]
+    // this.passwordParams =  encrypt.decrypt(this.$route.query.p).split('*')[0]
+    // this.userIdParams =  encrypt.decrypt(this.$route.query.i)
+  }
+};
 </script>
 
 <style>
@@ -368,9 +262,9 @@ li {
   background-size: 100% 100%;
 }
 @media screen and (max-height: 700px) {
-  .menuCon {
+  /* .menuCon {
     overflow: auto;
-  }
+  } */
 }
 .tabCon {
   width: 1206px;
@@ -378,7 +272,8 @@ li {
   margin: 0 auto;
   position: relative;
   /* margin-top: 115px; */
-  padding-top: 100px;
+  /* padding-top: 180px; */
+  padding-top: 12%;
 }
 .tabCon .tabMenuItem {
   /* overflow: hidden; */
@@ -486,23 +381,50 @@ li {
   padding-top: 7px;
   background: url("../../assets/image/exit.png") no-repeat;
 }
-.menuCon .el-dialog--center .el-dialog__body {
+.menuCon .menuConDig .el-dialog--center .el-dialog__body {
   text-align: center;
   font-size: 18px;
   color: #333;
 }
-.menuCon .el-dialog__header {
+.menuCon .menuConDig .el-dialog__header {
   background-color: #4aa0ef;
   text-align: center;
 }
-.menuCon .el-dialog__title {
+.menuCon .menuConDig .el-dialog__title {
   color: #fff;
 }
-.menuCon .el-dialog__headerbtn .el-dialog__close {
+.menuCon .menuConDig .el-dialog__headerbtn .el-dialog__close {
   color: #fff;
 }
-.menuCon .el-dialog__headerbtn .el-dialog__close:hover {
+.menuCon .menuConDig .el-dialog__headerbtn .el-dialog__close:hover {
   font-size: 18px;
   color: #fff;
+}
+@media screen and (min-width: 1200px) and (max-width: 1500px) {
+  .tabCon .menu_title {
+    font-size: 37px;
+    color: #333;
+    text-align: center;
+    font-family: FZCuQian-M17S;
+  }
+  .tabCon .tab_title li {
+    flex: 1;
+    height: 72px;
+    margin-bottom: 21px;
+    cursor: pointer;
+    font-size: 20px;
+    text-align: center;
+    line-height: 72px;
+    list-style: none;
+    padding-right: 24px;
+  }
+  .tabCon {
+    width: 1206px;
+    height: 670px;
+    margin: 0 auto;
+    position: relative;
+    /* margin-top: 115px; */
+    padding-top: 100px;
+  }
 }
 </style>

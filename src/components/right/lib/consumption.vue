@@ -1,6 +1,6 @@
 <template>
-    <div class="root">
-        <h3>旅游消费</h3>
+    <div class="root" @click="skip()">
+        <h3>本月旅游消费</h3>
         <div class="content">
             <dl class="total">
                 <dd class="def all">
@@ -34,15 +34,15 @@
                 <ul class="text">
                     <li>
                         <label for="">景区</label>
-                        <p>{{scenic | fixed}}万元</p>
+                        <p>{{scenic | fixed}}元</p>
                     </li>
                     <li>
                         <label for="">酒店</label>
-                        <p>{{hotel | fixed}}万元</p>
+                        <p>{{hotel | fixed}}元</p>
                     </li>
                     <li>
                         <label for="">餐饮</label>
-                        <p>{{catering | fixed}}万元</p>
+                        <p>{{catering | fixed}}元</p>
                     </li>
                 </ul>
             </div>
@@ -64,6 +64,7 @@ export default {
             hotel: 0,
             catering: 0,
             avg: 0,
+            time:"",
         }
     },
     filters:{
@@ -72,14 +73,23 @@ export default {
         }
     },
     mounted () {
+        let data = new Date();
+        let year = data.getFullYear();
+        let month = data.getMonth()+1;
+        // let date = data.getDate();
+        if (month<=10) {
+            month = '0'+ month
+        }
+        this.time = year+'-'+month;
+        // console.log(this.time);
         let chart = this.$echarts.init(this.$refs['pie-echarts'])
         chart.setOption(options)
 
         // axios.post('/tourist/findTouristConsumption', {queryTime: getDate()})
         
-        axios.post('/tourist/findTouristConsumption', qs.stringify({queryTime: '2019-12'}))
+        axios.post('/tourist/findTouristConsumption', qs.stringify({queryTime: this.time}))
                 .then(data => {
-                    console.log(data.data.data);
+                    // console.log(data.data.data);
                     this.total = data.data.data.total
                     this.scenic = data.data.data.scenic
                     this.hotel = data.data.data.hotel
@@ -98,7 +108,15 @@ export default {
                         chart.resize();
                     })
                 })
+    },
+    methods: {
+    skip() {
+    //   const { href } = this.$router.resolve({
+    //     path: "/touristXF"
+    //   });
+    //   window.open(href, "_blank");
     }
+  }
 }
 </script>
 

@@ -39,6 +39,15 @@
         </div>
       </div>
     </div>
+    <el-dialog :visible.sync="dialogVisible" custom-class="qr_code" title="请使用微信端扫码" width="30%">
+      <span>
+        <img src="../../../assets/image/nav_logo/qr.jpg" alt />
+      </span>
+      <!-- <span slot="footer" class="dialog-footer">
+    <el-button @click="dialogVisible = false">取 消</el-button>
+    <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+      </span>-->
+    </el-dialog>
   </div>
 </template>
 
@@ -46,12 +55,27 @@
 export default {
   name: "tab2",
   data() {
-    return {};
+    return {
+      dialogVisible: false,
+      tab1: ""
+    };
   },
   methods: {
+    async getRole() {
+      let res = await this.$http.get(`sso/getAllSystemUrls`);
+      // console.log(res.data);
+      if (res.data.msg == "success") {
+        this.urlLists = res.data.data;
+        this.urlLists.forEach((ele, i) => {
+          if (ele.systemName == "项目") {
+            this.tab1 = ele.systemUrl;
+          }
+        });
+      }
+    },
     tab1Click() {
       const { href } = this.$router.resolve({
-        path: "/index"
+        path: "/hotel"
       });
       window.open(href, "_blank");
     },
@@ -62,36 +86,39 @@ export default {
       window.open(href, "_blank");
     },
     tab3Click() {
-    //   const { href } = this.$router.resolve({
-    //     path: "/wordMouth"
-    //   });
-    //   window.open(href, "_blank");
-    },
-    tab4Click() {
-    //   const { href } = this.$router.resolve({
-    //     path: "/wordMouth"
-    //   });
-    //   window.open(href, "_blank");
-    },
-    tab5Click() {
-    //   const { href } = this.$router.resolve({
-    //     path: "/wordMouth"
-    //   });
-    //   window.open(href, "_blank");
-    },
-    tab6Click() {
-    //   const { href } = this.$router.resolve({
-    //     path: "/wordMouth"
-    //   });
-    //   window.open(href, "_blank");
-    },
-    tab7Click() {
       const { href } = this.$router.resolve({
-        path: "/meetThing"
+        path: "/reportAccount"
       });
       window.open(href, "_blank");
     },
-  }
+    tab4Click() {
+      this.dialogVisible = true;
+    },
+    tab5Click() {
+      const { href } = this.$router.resolve({
+        path: "/monitoring"
+      });
+      window.open(href, "_blank");
+    },
+    async tab6Click() {
+      let res = await this.$http.get(
+        `sso/toSystemUrlPage?systemUrl=${this.tab1}`
+      );
+      console.log(res);
+      if (res.data.msg == "success") {
+        window.open(res.data.data.url, "_blank");
+      }
+    },
+    tab7Click() {
+      const { href } = this.$router.resolve({
+        path: "/meetIndex"
+      });
+      window.open(href, "_blank");
+    }
+  },
+  mounted() {
+    this.getRole();
+  },
 };
 </script>
 
@@ -167,5 +194,21 @@ export default {
   margin-right: 2%;
   background: url("../../../assets/image/nav_logo/tab_589_bg.png") no-repeat;
   background-size: 100% 100%;
+}
+@media screen and (min-width: 1200px) and (max-width: 1500px) {
+  .tab2_con .top {
+    width: 80%;
+    margin: 0 auto;
+    height: 150px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .tab2_con .bottom {
+    width: 80%;
+    margin: 0 auto;
+    height: 150px;
+    display: flex;
+    margin-top: 26px;
+  }
 }
 </style>

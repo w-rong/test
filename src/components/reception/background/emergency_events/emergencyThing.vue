@@ -669,12 +669,13 @@ export default {
 <style>
 .emergency_person_all_content {
   width: 100%;
-  /* height: 100%; */
+  height: 100%;
   background-color: #f4f4f4;
 }
 .emergency_person_content {
   margin-left: calc(210px);
-  height: 1080px;
+  height: calc(100% - 50px);
+  overflow-y:auto ;
   background-color: #fff;
   position: relative;
 }
@@ -738,6 +739,7 @@ export default {
   border: 1px solid #ccc;
   text-align: center;
   padding: 10px 0;
+  line-height: 20px;
 }
 .basis_edit {
   color: #0095ff;

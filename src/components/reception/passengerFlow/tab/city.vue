@@ -9,6 +9,7 @@
                     v-model="beginValue"
                     value-format="yyyy-MM-dd"
                     @change="beginChange"
+                    :picker-options="pickerOptions0"
                     type="date"
                     placeholder="选择日期">
                 </el-date-picker>
@@ -23,6 +24,7 @@
                     v-model="endValue"
                     ref="focesInput"
                     @change="endChange"
+                    :picker-options="pickerOptions1"
                     value-format="yyyy-MM-dd"
                     type="date"
                     placeholder="选择日期">
@@ -30,7 +32,7 @@
                 <div class="total_date1_down"></div>
             </div>
         </div>
-        <div class="total_container" ref="totalechart">ssss</div>
+        <div class="total_container" ref="totalechart"></div>
     </div>
 </template>
 
@@ -42,42 +44,54 @@ export default {
         return {
             beginValue: moment(new Date(new Date().getTime() - 7 * 24 * 3600 * 1000)).format('YYYY-MM-DD'),
             endValue: moment(new Date(new Date().getTime() - 1 * 24 * 3600 * 1000)).format('YYYY-MM-DD'),
-            totalEc: null
+            totalEc: null,
+            pickerOptions0: {
+                disabledDate: (time) => {
+                    return time.getTime() > new Date(new Date().getTime() - 1 * 24 * 3600 * 1000);
+                }
+            },
+            pickerOptions1: {
+                disabledDate: (time) => {
+                    // return time.getTime() > new Date(new Date().getTime() - 1 * 24 * 3600 * 1000);
+                    return time.getTime() <  new Date(this.beginValue).getTime() || time.getTime() > new Date(new Date().getTime() - 1 * 24 * 3600 * 1000)
+                }
+            },
         }
     },
     methods: {
         beginChange(data){
             this.beginValue = data
-            this.$refs.focesInput.focus();
+            this.totalEchartFn()
+            // this.$refs.focesInput.focus();
         },
         endChange(data){
             this.endValue = data
             this.totalEchartFn()
         },
         async totalEchartFn(){
+            var startTime = this.beginValue.replace(/-/g, '')
+            var endTime = this.endValue.replace(/-/g, '')
             var res = await this.$http.get(
-                `/aone/listAonePassengerHwSourceRegion`,
-                qs.stringify({
-                    endTime: '2020-01-06',
-                    startTime: '2020-01-06',
-                })
+                `/aone/getCityCount?endTime=${endTime}&startTime=${startTime}`
             )
             let {data, code} = res.data
             var dataAxis = [];
             var data1 = []
-            let sortData = data.sort(compare("index",false)).slice(0, 10)
-           
+            let sortData = data.sort(compare("count",false)).slice(0, 10)
             sortData.forEach(element => {
-                dataAxis.push(element.province)
-                data1.push(element.index)
+                if(element.city){
+                    dataAxis.push(element.city.replace('市', ''))
+                    data1.push(element.count)
+                }
             });
 
             this.totalEc = this.$echarts.init(this.$refs.totalechart)
             var yMax = Math.max(...data1);
+            var maxY = Number(yMax +( yMax/6)).toFixed(0)
             var dataShadow = [];
 
             for (var i = 0; i < data1.length; i++) {
-                dataShadow.push(yMax);
+                dataShadow.push(maxY);
             }
 
             var option = {
@@ -103,10 +117,6 @@ export default {
                 xAxis: {
                     type: 'category',
                     data: dataAxis,
-                    // name: '单位:(人次)',
-                    // nameTextStyle: {
-                    //     padding: [0, 0, -70, -300]    // 四个数字分别为上右下左与原位置距离
-                    // },
                     axisLabel: {
                         textStyle: {
                             color: '#C2E2F8',
@@ -125,7 +135,7 @@ export default {
                     splitLine: {
                         show: false,//网格线
                     },
-                    z: 10
+                    interval: 0,
                 },
                 grid: [
                     {
@@ -152,6 +162,7 @@ export default {
                             color: '#C2E2F8'
                         }
                     },
+			        max: maxY,
                     splitLine: {
                         show: false,//网格线
                     },
@@ -164,7 +175,7 @@ export default {
                 series: [
                     { // For shadow
                         type: 'bar',
-                        barWidth: '20%',
+                        barWidth: '30%',
                         itemStyle: {
                             color: 'rgba(0,39,71,1)',
                             emphasis: {
@@ -178,6 +189,7 @@ export default {
                     },
                     {
                         type: 'bar',
+                        barWidth: '30%',
                         itemStyle: {
                             normal:{
                                 color: new this.$echarts.graphic.LinearGradient(
@@ -236,7 +248,11 @@ function compare(property,desc) {
 }
 </script>
 
-<style>
+<style Scoped>
+    
+    .el-date-editor.el-input.el-input--prefix.el-input--suffix.el-date-editor--month input{
+        color: #fff;
+    }
     .wh100{
         width: 100%;
         height: 100%;
@@ -244,6 +260,10 @@ function compare(property,desc) {
     /*  */
     .clearIcon{
         content: '';
+    }
+    .el-picker-panel.down_date .el-date-table td.disabled div{
+        background-color: #072342;
+        color: #999;
     }
     .total_page .el-date-editor.el-input, .el-date-editor.el-input__inner{
         width: 100%;

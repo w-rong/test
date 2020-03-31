@@ -28,8 +28,8 @@
               <td style="width:10%">{{item.organPhone}}</td>
               <td style="width:10%">{{item.organAddress}}</td>
               <td style="width:10%">
-                <i class="el-icon-edit basis_edit" @click="change(item.id)">编辑</i>
-                <i class="el-icon-delete basis_del" @click="del(item.id)">删除</i>
+                <i class="el-icon-edit basis_edit" @click="change(item.oId)">编辑</i>
+                <i class="el-icon-delete basis_del" @click="del(item.oId)">删除</i>
               </td>
             </tr>
           </table>
@@ -70,12 +70,12 @@
               </el-col>
               <el-col :span="22">
                 <el-col :span="12">
-                  <el-form-item label="机构负责人">
+                  <el-form-item label="机构负责人" prop="person">
                     <el-input v-model="ruleForm.person"></el-input>
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
-                  <el-form-item label="机构联系电话">
+                  <el-form-item label="机构联系电话" label-width="120px" prop="phone">
                     <el-input
                       v-model="ruleForm.phone"
                       maxlength="11"
@@ -144,12 +144,12 @@
               </el-col>
               <el-col :span="22">
                 <el-col :span="12">
-                  <el-form-item label="机构负责人">
+                  <el-form-item label="机构负责人" prop="person">
                     <el-input v-model="ruleFormChange.person"></el-input>
                   </el-form-item>
                 </el-col>
                 <el-col :span="12">
-                  <el-form-item label="机构联系电话">
+                  <el-form-item label="机构联系电话" prop="phone" label-width="120px">
                     <el-input
                       v-model="ruleFormChange.phone"
                       maxlength="11"
@@ -232,7 +232,9 @@ export default {
       },
       rules: {
         name: [{ required: true, message: "请输入机构名称", trigger: "blur" }],
-        duty: [{ required: true, message: "请输入机构职责", trigger: "blur" }]
+        duty: [{ required: true, message: "请输入机构职责", trigger: "blur" }],
+        person: [{ required: true, message: "请输入机构负责人", trigger: "blur" }],
+        phone: [{ required: true, message: "请输入机构电话", trigger: "blur" }],
       },
       ruleFormChange: {
         name: "",
@@ -247,7 +249,9 @@ export default {
       },
       rulesChange: {
         name: [{ required: true, message: "请输入机构名称", trigger: "blur" }],
-        duty: [{ required: true, message: "请输入机构职责", trigger: "blur" }]
+        duty: [{ required: true, message: "请输入机构职责", trigger: "blur" }],
+        person: [{ required: true, message: "请输入机构负责人", trigger: "blur" }],
+        phone: [{ required: true, message: "请输入机构电话", trigger: "blur" }],
       }
     };
   },
@@ -277,7 +281,7 @@ export default {
     // 获取机构列表
     async getOrgList() {
       let res = await this.$http.get(
-        `/emer/listEmergencyOrgan?pagNumber=${this.currentPage}&pagSize=${this.pageSize}&organName=${this.orgName}`
+        `/emer/listEmergencyOrganByGroupByName?pagNumber=${this.currentPage}&pagSize=${this.pageSize}&organName=${this.orgName}`
       );
       console.log(res);
       if (res.data.msg == "success") {
@@ -336,9 +340,9 @@ export default {
     // 编辑机构列表
     async editOrgLists(id) {
       let res = await this.$http.post(
-        `	/emer/updateEmergencyOrgan`,
+        `/emer/updateEmergencyOrgan`,
         qs.stringify({
-          id: this.editId,
+          oId: this.editId,
           organName: this.ruleFormChange.name,
           organDuty: this.ruleFormChange.duty,
           organPeople: this.ruleFormChange.person,
@@ -463,12 +467,13 @@ export default {
 <style>
 .emergency_org_all_content {
   width: 100%;
-  /* height: 100%; */
+  height: 100%;
   background-color: #f4f4f4;
 }
 .emergency_org_content {
   margin-left: calc(210px);
-  height: 1080px;
+  height: calc(100% - 50px);
+  overflow-y:auto ;
   background-color: #fff;
   position: relative;
 }
@@ -532,6 +537,7 @@ export default {
   border: 1px solid #ccc;
   text-align: center;
   padding: 10px 0;
+  line-height: 20px;
 }
 .basis_edit {
   color: #0095ff;

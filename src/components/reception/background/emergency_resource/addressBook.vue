@@ -13,6 +13,7 @@
             <tr class="emergency_address_content_right_content_table_title">
               <td>姓名</td>
               <td>性别</td>
+              <td>职位</td>
               <td>联系方式</td>
               <!-- <td>操作</td> -->
             </tr>
@@ -21,7 +22,8 @@
             </tr>
             <tr v-for="(item, index) in personList" :key="index">
               <td style="width:12%">{{item.name}}</td>         
-              <td style="width:12%">{{item.sex | sex}}</td>         
+              <td style="width:12%">{{item.sex | sex}}</td>    
+              <td style="width:10%">{{item.position}}</td>     
               <td style="width:10%">{{item.phone}}</td>
               <!-- <td style="width:10%">
                 <i class="el-icon-edit basis_edit" @click="change(item.id)">编辑</i>
@@ -387,6 +389,7 @@ export default {
   border: 1px solid #ccc;
   text-align: center;
   padding: 10px 0;
+  line-height: 20px;
 }
 .basis_edit {
   color: #0095ff;

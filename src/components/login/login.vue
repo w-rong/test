@@ -3,7 +3,7 @@
     <div class="login_tit">普陀区文化和旅游信息服务平台</div>
     <div class="box">
       <p class="title">欢迎登录</p>
-      <form action class="subForm">
+      <div class="subForm">
         <div class="divAcc">
           <span class="accIcon"></span>
           <input
@@ -25,65 +25,47 @@
             class="pwd"
             ref="pwd"
           />
-          <!-- <span class="pwdTootle" v-if="pwdTootle">6~16位字母数字</span> -->
         </div>
         <div class="divCode">
           <input type="text" class="code" v-model="codeIn" placeholder="请输入验证码" />
-          <!-- <input type="button" class="codetxt" v-model="randomCode"/> -->
           <img :src="imgUrl" alt />
+          <!-- <img :src="verificationCode" alt /> -->
           <span class="reloadIcon" @click="VerificationCode()"></span>
         </div>
-        <a class="login_btn" @click="getlogin"></a>
-      </form>
+        <button class="login_btn" @click="getlogin" type="button"></button>
+      </div>
     </div>
-    <!-- 提示信息 -->
-    <!-- <span type="text" style="color: red;">{{ ccc }}</span> -->
   </div>
 </template>
 
 <script>
 import qs from "qs";
+import axios from "axios";
 import "../../css/common.css";
-// import "@/assets/js/userData.js";
-// import globalInfo from '@/assets/js/userData.js'
-// import CryptoJS from 'crypto-js'
-
-// import encrypt from '@/assets/js/jiami.js'
+import md5 from 'js-md5';
 export default {
-  // usernameParams,passwordParams,
   data() {
     return {
-      validcodeName: (rule, value, callback) => {
-        let reg = /(?!^[0-9]+$)(?!^[A-z]+$)(?!^[^A-z0-9]+$)^.{6,16}$/;
-        if (!reg.test(value)) {
-          callback(new Error("必须是由4-9位数字和字母组合"));
-        } else {
-          callback();
-        }
-      },
       codeIn: "",
       imgUrl: "http://47.96.94.56:8082/kaptcha/registCode",
-      randomCode: "",
-      ccc: "提示信息",
-      codeOk: false,
       pwd: "", //密码
       account: "", //用户名
-      isUrl: false, //地址栏是否有参数链接
-      paramsUrl: "",
-      urlport: "",
-      urlpath: "",
-      isTrue: "",
-      pwdTootle: false
+      verificationCode: "",
+      header: ""
     };
   },
-  created() {
-    // this.createCode(); //初始化验证码
-  },
+  created() {},
   methods: {
     // 验证码
     async VerificationCode() {
       var num = Math.ceil(Math.random() * 10); //生成一个随机数（防止缓存）
       this.imgUrl = "http://47.96.94.56:8082/kaptcha/registCode?" + num;
+    },
+    async getVer() {
+      let res = await this.$http.get(`/kaptcha/registCode`);
+      // console.log(res.headers["cache-control"]);
+      this.verificationCode = res.data;
+      // console.log(res.headers);
     },
     async getlogin() {
       if (this.account == "") {
@@ -107,58 +89,49 @@ export default {
         });
         return;
       }
-      this.$router.push({path:'/navmenu'})
+      let password = md5(this.pwd)
+      // console.log(password);
       var res = await this.$http.post(
         "/login",
         qs.stringify({
           username: this.account,
           validateCode: this.codeIn,
-          password: this.pwd
+          password: password
         })
       );
-      console.log(res.data);
-    //   this.$message({
-    //     type: "success",
-    //     message: "查询成功!"
-    //   });
-    //   this.$message.error(res.msg);
-    //   let { data, isSuccess, message } = res.data;
-    //   if (isSuccess) {
-    //     console.log(res);
-        
-    //   } else {
-    //     this.$message.error(res.msg);
-    //     return;
-    //   }
-    },
-    //跳转到返回的url
-    getUrlParams() {
-      var url = location.search; //获取url中"?"符后的字串
-      if (url) {
-        this.isUrl = true;
-        if (url.indexOf("?") != -1) {
-          var str = url.substr(1); //从第一个字符开始 因为第0个是?号 获取所有除问号的所有符串
-          var strs = str.split("&");
-          var obj = {};
-          for (var i = 0; i < strs.length; i++) {
-            var str1 = strs[i].split("=");
-            obj[str1[0]] = str1[1];
-            var newarr = [];
-            newarr.push(obj);
-          }
-          this.urlport = newarr[0].port;
-          this.urlpath = newarr[0].path;
-          this.isTrue = newarr[0].isTrue;
-        }
+      console.log(res);
+      if (res.data.msg == "loginSuccess") {
+        this.$message({
+          message: "登录成功",
+          type: "success"
+        });
+        this.$router.push({ path: "/navmenu" });
+        this.header = res.headers["authorization"];
+        console.log(res.headers["authorization"]);
+        console.log(this.header);
+        localStorage.setItem("Authorization", res.headers["authorization"]);
+        localStorage.setItem("username", res.data.username);
+        // localStorage.setItem("username", res.data.isAdmin);
       } else {
-        this.isUrl = false;
+        this.$message({
+          message: res.data.msg,
+          type: "error"
+        });
+        this.VerificationCode();
       }
+      // var url = location.href; //获取url中"?"符后的字串
+      // if (url.indexOf("?") != -1) {
+      //   let pathRote = url.substring(url.indexOf("?") + 1, url.length);
+      //   this.$router.push({ path: "/" + pathRote });
+      // } else {
+      //   this.$router.push({ path: "/navmenu" });
+      // }
     }
-    // 密码格式验证
   },
   mounted() {
-    this.getUrlParams();
+    // this.getVer();
     this.VerificationCode();
+    // localStorage.setItem("Authorization", "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJ0ZXN0MSIsInVzZXJfaWQiOjEsInNjb3BlIjpbIlJPTEVfQURNSU4iLCJST09UIiwi5rWL6K-VIiwid2V3ZSIsIjEyMTIxMiIsIjExMTExIiwiamF2YSJdLCJleHAiOjE1ODQzNTIzNzEsImlhdCI6MTU4NDM0ODc3MSwianRpIjoiZDkwZTAzZjEtMjZiYy00ODQ3LTg1ODktNzdlODgwNjE1ZDliIn0.ZT6u0_qAtavKUirXo2SuyI5ixYQdFCTLOTB4e8DNyJVuJcTu5O96MZIGejMAwH0Fv5SHIFtdUZnwm4nynjrwsg");
   }
 };
 </script>
@@ -201,7 +174,7 @@ export default {
   /* background-size: 1920px 1080px;
   background-position: 50% 50%; */
   /* overflow: hidden; */
-  padding-top: 150px;
+  padding-top: 261px;
   box-sizing: border-box;
   position: relative;
 }
@@ -317,6 +290,7 @@ textarea:-ms-input-placeholder {
 .box .subForm .login_btn {
   width: 291px;
   height: 44px;
+  border: none;
   margin-left: 10px;
   margin-top: 16px;
   display: block;
@@ -326,5 +300,19 @@ textarea:-ms-input-placeholder {
 .box .subForm .divCode .codetxt {
   padding-left: 0;
   border-bottom: 0;
+}
+@media screen and (min-width: 1200px) and (max-width: 1500px) {
+  .login {
+    width: 100%;
+    height: 100%;
+    background: url("../../assets/image/login_bg.png") no-repeat;
+    background-size: 100% 100%;
+    /* background-size: 1920px 1080px;
+  background-position: 50% 50%; */
+    /* overflow: hidden; */
+    padding-top: 150px;
+    box-sizing: border-box;
+    position: relative;
+  }
 }
 </style>

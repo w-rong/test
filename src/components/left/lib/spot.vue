@@ -1,6 +1,6 @@
 <template>
     <div class="root" ref="root">
-        <h3>车辆来源TOP5</h3>
+        <h3>本月车辆来源TOP5</h3>
         <div class="content">
             <ul class="label">
                 <li v-for="(i, idx) in list" :key="idx" >
@@ -29,28 +29,28 @@ export default {
         chart.setOption(options)
         
         axios.post(`/scenic/findScenicTouristVolume`, {queryTime: getDate()})
-            .then(data => {
-                console.log(data);
-                let vals = data.map(d => d.touristVolume).reverse()
-                let max = Math.max(...vals)
+            // .then(data => {
+            //     // console.log(data);
+            //     let vals = data.map(d => d.touristVolume).reverse()
+            //     let max = Math.max(...vals)
 
-                chart.setOption({
-                    xAxis: {
-                        max
-                    },
-                    series: [
-                        {
-                            data: data.map(d => d.touristVolume).reverse(),
-                            // barCategoryGap: window.scale * 28
-                        }
-                    ]
-                })
-                this.list = data
+            //     chart.setOption({
+            //         xAxis: {
+            //             max
+            //         },
+            //         series: [
+            //             {
+            //                 data: data.map(d => d.touristVolume).reverse(),
+            //                 // barCategoryGap: window.scale * 28
+            //             }
+            //         ]
+            //     })
+            //     this.list = data
 
-                setTimeout(function () {
-                    chart.resize();
-                }, 0)
-            })
+            //     setTimeout(function () {
+            //         chart.resize();
+            //     }, 0)
+            // })
     },
     methods: {
         judeg (data) {
@@ -72,7 +72,8 @@ export default {
 
 <style scoped lang="less">
     .root{
-        .rimStyle();
+        background: url("/static/img/bg.png");
+        .rimStyleBig();
 
         .content{
             height: 15rem - 2.95rem;
