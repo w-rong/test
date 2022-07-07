@@ -15,7 +15,7 @@
     "element-ui": "^2.13.0",
     "html2canvas": "^1.0.0-rc.5",
     "js-md5": "^0.7.3",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "nodemon": "^2.0.2",
     "qrcodejs2": "0.0.2",
     "qs": "^6.9.1",
